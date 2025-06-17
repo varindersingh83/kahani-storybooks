@@ -432,3 +432,48 @@ body {
   );
   margin: 0 auto;
 } 
+
+/* Styles for the form */
+.footer-form {
+  display: flex;
+  flex-direction: column; /* This is the key change to stack items vertically */
+  align-items: center;   /* This will horizontally center the stacked items */
+  gap: 15px;             /* Sets the vertical space between the input and button */
+  margin: 30px auto;
+  max-width: 400px;      /* UPDATED: Increased to give the input plenty of space */
+}
+
+.footer-form input {
+  flex-grow: 1; /* Allows input to take up available space */
+  padding: 12px 15px 12px 25px;
+  border-radius: 25px;
+  border: 1px solid #484869;
+  background-color: #16213e;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  /* The "min-width" property has been deleted from here */
+}
+
+.footer-form input::placeholder {
+  color: #b8b8b8;
+}
+
+.footer-form .cta-button {
+  margin-top: 0; /* Override the default margin */
+  max-width: 320px;
+}
+
+/* This new rule should be added if you don't have it already */
+.footer-form input,
+.footer-form .cta-button {
+  width: 100%; /* Makes both elements take the full width of the container */
+  text-align: center; /* Ensures text inside is centered */
+}
+
+.form-subtext {
+  font-size: 0.9rem;
+  color: #b8b8b8;
+  margin-top: 15px;
+  opacity: 0.8;
+}
