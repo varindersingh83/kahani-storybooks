@@ -14,12 +14,14 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
 
 // Scroll indicator functionality
 const scrollIndicator = document.querySelector(".scroll-indicator");
-scrollIndicator.addEventListener("click", () => {
-  window.scrollTo({
-    top: window.innerHeight,
-    behavior: "smooth",
+if (scrollIndicator) {
+  scrollIndicator.addEventListener("click", () => {
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: "smooth",
+    });
   });
-});
+}
 
 // Add scroll animations
 const observerOptions = {
