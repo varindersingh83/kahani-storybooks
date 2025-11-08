@@ -1,0 +1,57 @@
+.
+├── design-drop
+│   └── Kahani (2).zip
+├── index.html
+├── misc
+│   └── pre-sync-structure.txt
+├── package-lock.json
+├── package.json
+├── README.md
+├── scripts
+│   └── design-sync.js
+├── site.webmanifest
+├── src
+│   ├── App.tsx
+│   ├── assets
+│   │   ├── 28beed4105e7d599d27482eb520ab25026afdfb1.png
+│   │   ├── 412086e0a118ad82de531944e38918ee76551a50.png
+│   │   ├── 9f08c189907bc232b9c2ac2539894b434c5b4d8f.png
+│   │   ├── dcff1f759535e69d17d234ee75eaa7f67d81642e.png
+│   │   ├── e02f688464fb6af4e9198a62d0926517c0dd83c2.png
+│   │   ├── e15700d31350ac4824b5cc4829988f610ee9e48d.png
+│   │   └── ee47916f98bc6af778424613ac53f81303757160.png
+│   ├── Attributions.md
+│   ├── components
+│   │   ├── BeforeAfterSlider.tsx
+│   │   ├── ContactUs.tsx
+│   │   ├── CreateFlow.tsx
+│   │   ├── CustomBookShowcase.tsx
+│   │   ├── FAQ.tsx
+│   │   ├── figma
+│   │   ├── FigurineShowcase.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Giveaway.tsx
+│   │   ├── HowItWorks.tsx
+│   │   ├── OrderConfirmation.tsx
+│   │   ├── PrivacyPolicy.tsx
+│   │   ├── ProductSelection.tsx
+│   │   ├── ShippingCheckout.tsx
+│   │   ├── Testimonials.tsx
+│   │   ├── ui
+│   │   ├── UnboxingSection.tsx
+│   │   └── UploadPersonalize.tsx
+│   ├── guidelines
+│   │   └── Guidelines.md
+│   ├── index.css
+│   ├── index.html
+│   ├── main.tsx
+│   ├── public
+│   │   ├── ai.txt
+│   │   ├── robots.txt
+│   │   ├── schema.json
+│   │   └── sitemap.xml
+│   └── styles
+│       └── globals.css
+└── vite.config.ts
+
+12 directories, 43 files

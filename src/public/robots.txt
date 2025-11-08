@@ -1,0 +1,8 @@
+# robots.txt for Kahani - Personalized Children's Storybooks
+
+User-agent: *
+Allow: /
+Disallow: /create
+
+# Sitemap location
+Sitemap: https://www.kahanistorybooks.com/sitemap.xml
