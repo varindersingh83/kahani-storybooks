@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { BeforeAfterSlider } from "./components/BeforeAfterSlider";
 import { HowItWorks } from "./components/HowItWorks";
+import { CustomBookShowcase } from "./components/CustomBookShowcase";
+import { FigurineShowcase } from "./components/FigurineShowcase";
+import { UnboxingSection } from "./components/UnboxingSection";
+import { FAQ } from "./components/FAQ";
 import { Testimonials } from "./components/Testimonials";
 import { Giveaway } from "./components/Giveaway";
 import { Footer } from "./components/Footer";
@@ -202,7 +206,7 @@ export default function App() {
                 className="group relative px-8 md:px-10 py-4 md:py-5 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-2xl"
               >
                 {/* Mint Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#7DFFAF] to-[#5DE0A1]"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#B3E5D0] to-[#7DFFAF]"></div>
                 {/* Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-white/5 backdrop-blur-xl group-hover:from-white/50 group-hover:via-white/30 group-hover:to-white/10 transition-all duration-300 border-t-2 border-t-white/60 border-x border-x-white/30 border-b border-b-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),inset_0_-1px_2px_rgba(0,0,0,0.1)]"></div>
                 <span
@@ -231,6 +235,18 @@ export default function App() {
 
       {/* How It Works Section */}
       <HowItWorks />
+
+      {/* Custom Book Showcase Section */}
+      <CustomBookShowcase />
+
+      {/* Figurine Showcase Section */}
+      <FigurineShowcase />
+
+      {/* Unboxing Section */}
+      <UnboxingSection />
+
+      {/* FAQ Section */}
+      <FAQ />
 
       {/* Testimonials Section */}
       <Testimonials />

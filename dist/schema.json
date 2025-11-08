@@ -1,0 +1,165 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.kahanistorybooks.com/#organization",
+      "name": "Kahani Storybooks",
+      "alternateName": "Kahani",
+      "url": "https://www.kahanistorybooks.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.kahanistorybooks.com/logo.png",
+        "width": "512",
+        "height": "512"
+      },
+      "description": "Kahani creates personalized children's storybooks and figurines. Transform your child's photo into a magical Pixar-inspired storybook character with handcrafted quality and love.",
+      "email": "team@vsnagra.com",
+      "sameAs": [
+        "https://www.instagram.com/kahani",
+        "https://www.tiktok.com/@kahani",
+        "https://www.youtube.com/@kahani"
+      ],
+      "foundingDate": "2025",
+      "slogan": "From photo to storybook magic"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.kahanistorybooks.com/#website",
+      "url": "https://www.kahanistorybooks.com/",
+      "name": "Kahani - Personalized Children's Storybooks",
+      "description": "Transform your child's photos into magical personalized storybooks and figurines. Handcrafted with Pixar-inspired quality.",
+      "publisher": {
+        "@id": "https://www.kahanistorybooks.com/#organization"
+      },
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "Product",
+      "@id": "https://www.kahanistorybooks.com/#product-digital",
+      "name": "Digital Storybook PDF",
+      "description": "Personalized digital storybook featuring your child as the main character in Pixar-inspired illustrations.",
+      "brand": {
+        "@id": "https://www.kahanistorybooks.com/#organization"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "9.99",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.kahanistorybooks.com/create"
+      },
+      "category": "Children's Books",
+      "audience": {
+        "@type": "PeopleAudience",
+        "suggestedMinAge": 3,
+        "suggestedMaxAge": 10
+      }
+    },
+    {
+      "@type": "Product",
+      "@id": "https://www.kahanistorybooks.com/#product-printed",
+      "name": "Printed Personalized Storybook",
+      "description": "Premium printed storybook with your child as the main character, featuring high-quality binding and Pixar-inspired illustrations.",
+      "brand": {
+        "@id": "https://www.kahanistorybooks.com/#organization"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "49.99",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.kahanistorybooks.com/create"
+      },
+      "category": "Children's Books",
+      "audience": {
+        "@type": "PeopleAudience",
+        "suggestedMinAge": 3,
+        "suggestedMaxAge": 10
+      }
+    },
+    {
+      "@type": "Product",
+      "@id": "https://www.kahanistorybooks.com/#product-playset",
+      "name": "Full Playset with Storybook and Figurine",
+      "description": "Complete personalized experience including printed storybook, custom figurine of your child, and collectible packaging.",
+      "brand": {
+        "@id": "https://www.kahanistorybooks.com/#organization"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "179.99",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://www.kahanistorybooks.com/create"
+      },
+      "category": "Children's Books & Toys",
+      "audience": {
+        "@type": "PeopleAudience",
+        "suggestedMinAge": 3,
+        "suggestedMaxAge": 10
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://www.kahanistorybooks.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Kahani?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kahani creates personalized children's storybooks and figurines. We transform your child's photo into a magical Pixar-inspired character in a custom storybook, available as digital PDF, printed book, or complete playset with figurine."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does Kahani cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kahani offers three products: Digital PDF for $9.99, Printed Storybook for $49.99, and Full Playset with figurine for $179.99."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What age range is Kahani suitable for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kahani storybooks and figurines are designed for children ages 3-10 years old."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Kahani safe for children?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Kahani is family-safe and privacy-conscious. We do not knowingly collect personal information from children under 13. Our website is intended for parents and guardians."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I contact Kahani?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You can email us at team@vsnagra.com or use our contact form at https://www.kahanistorybooks.com/contact"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "ContactPage",
+      "@id": "https://www.kahanistorybooks.com/contact",
+      "url": "https://www.kahanistorybooks.com/contact",
+      "name": "Contact Kahani",
+      "description": "Get in touch with Kahani Storybooks for questions about personalized children's books and figurines."
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://www.kahanistorybooks.com/privacy",
+      "url": "https://www.kahanistorybooks.com/privacy",
+      "name": "Privacy Policy - Kahani",
+      "description": "Kahani's privacy policy explains how we handle your information and protect children's privacy.",
+      "dateModified": "2025-10-01"
+    }
+  ]
+}

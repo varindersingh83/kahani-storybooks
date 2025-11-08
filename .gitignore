@@ -45,3 +45,6 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+
+# Design drop folder (contains extracted design exports)
+design-drop/
