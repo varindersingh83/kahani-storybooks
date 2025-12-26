@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { saveContactSubmission } from "../lib/api";
 
 interface ContactUsProps {
   onBack: () => void;
@@ -11,15 +12,31 @@ export function ContactUs({ onBack }: ContactUsProps) {
     message: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock form submission
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
+    setIsSubmitting(true);
+    
+    try {
+      await saveContactSubmission(
+        formData.name,
+        formData.email,
+        formData.message
+      );
+      
+      setIsSubmitted(true);
       setFormData({ name: "", email: "", message: "" });
-    }, 3000);
+      
+      setTimeout(() => {
+        setIsSubmitted(false);
+      }, 3000);
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      alert("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -163,7 +180,7 @@ export function ContactUs({ onBack }: ContactUsProps) {
               {/* Send Button */}
               <button
                 type="submit"
-                disabled={isSubmitted}
+                disabled={isSubmitted || isSubmitting}
                 className="group relative w-full sm:w-auto px-8 py-3.5 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {/* Mint Gradient Background */}

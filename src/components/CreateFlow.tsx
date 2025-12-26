@@ -8,8 +8,26 @@ interface CreateFlowProps {
   onBack: () => void;
 }
 
+interface OrderData {
+  productType: string | null;
+  productName: string | null;
+  personalization: {
+    childName?: string;
+    childAge?: number;
+    dedication?: string;
+    photoUrls?: string[];
+  } | null;
+}
+
 export function CreateFlow({ onBack }: CreateFlowProps) {
   const [currentStep, setCurrentStep] = useState(2);
+  const [orderData, setOrderData] = useState<OrderData>({
+    productType: null,
+    productName: null,
+    personalization: null,
+  });
+  const [orderNumber, setOrderNumber] = useState<string>("");
+  const [customerEmail, setCustomerEmail] = useState<string>("");
 
   const handleBackToIntro = () => {
     onBack(); // Go back to home page
@@ -23,15 +41,31 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
     setCurrentStep(3);
   };
 
-  const handleNextFromProductSelection = () => {
+  const handleNextFromProductSelection = (productType: string, productName: string) => {
+    setOrderData(prev => ({
+      ...prev,
+      productType,
+      productName,
+    }));
     setCurrentStep(3);
   };
 
-  const handleNextFromUpload = () => {
+  const handleNextFromUpload = (personalization: {
+    childName: string;
+    childAge: number;
+    dedication?: string;
+    photoUrls: string[];
+  }) => {
+    setOrderData(prev => ({
+      ...prev,
+      personalization,
+    }));
     setCurrentStep(4);
   };
 
-  const handleNextFromShipping = () => {
+  const handleNextFromShipping = (orderNum: string, email: string) => {
+    setOrderNumber(orderNum);
+    setCustomerEmail(email);
     setCurrentStep(5);
   };
 
@@ -44,9 +78,9 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
     return (
       <OrderConfirmation 
         onReturnHome={handleReturnHome}
-        orderNumber="#KHN1025"
-        productName="Printed Book"
-        customerEmail="your@email.com"
+        orderNumber={orderNumber}
+        productName={orderData.productName || "Printed Book"}
+        customerEmail={customerEmail}
       />
     );
   }
@@ -57,6 +91,12 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
       <ShippingCheckout 
         onBack={handleBackToUpload}
         onNext={handleNextFromShipping}
+        selectedProduct={{
+          id: orderData.productType || "printed",
+          name: orderData.productName || "Printed Book",
+          price: orderData.productType === "playset" ? "$35.99" : "$32.99",
+        }}
+        personalizationData={orderData.personalization}
       />
     );
   }

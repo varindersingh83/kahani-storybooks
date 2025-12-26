@@ -1,17 +1,24 @@
 import { useState } from "react";
-import { ArrowLeft, CreditCard, Lock, Mail, BookOpen, Box } from "lucide-react";
+import { ArrowLeft, CreditCard, Lock, Mail, BookOpen, Box, Loader2 } from "lucide-react";
+import { saveOrder } from "../lib/api";
 
 interface ShippingCheckoutProps {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (orderNumber: string, email: string) => void;
   selectedProduct?: {
     id: string;
     name: string;
     price: string;
   };
+  personalizationData?: {
+    childName?: string;
+    childAge?: number;
+    dedication?: string;
+    photoUrls?: string[];
+  } | null;
 }
 
-export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCheckoutProps) {
+export function ShippingCheckout({ onBack, onNext, selectedProduct, personalizationData }: ShippingCheckoutProps) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -22,6 +29,7 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
     zipCode: "",
     country: "United States",
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   // Use provided product or default to Printed Book
   const product = selectedProduct || {
@@ -39,9 +47,37 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
     }));
   };
 
-  const handleProceedToPayment = () => {
-    console.log("Proceeding to payment...", formData);
-    onNext();
+  const handleProceedToPayment = async () => {
+    if (!canProceed || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const order = await saveOrder({
+        productType: selectedProduct?.id || "printed",
+        childName: personalizationData?.childName,
+        childAge: personalizationData?.childAge,
+        dedication: personalizationData?.dedication,
+        photoUrls: personalizationData?.photoUrls,
+        customerName: formData.fullName,
+        customerEmail: formData.email,
+        shippingAddress: {
+          fullName: formData.fullName,
+          email: formData.email,
+          addressLine1: formData.addressLine1,
+          addressLine2: formData.addressLine2 || undefined,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+        },
+      });
+
+      onNext(order.order_number, order.customer_email);
+    } catch (error) {
+      console.error("Error saving order:", error);
+      alert("Failed to save order. Please try again.");
+      setIsSaving(false);
+    }
   };
 
   const canProceed =
@@ -394,11 +430,11 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
                   {/* Proceed to Payment Button */}
                   <button
                     onClick={handleProceedToPayment}
-                    disabled={!canProceed}
+                    disabled={!canProceed || isSaving}
                     className={`
                       group relative w-full px-10 py-4 rounded-[24px] overflow-hidden transition-all duration-300 shadow-lg mb-4
                       ${
-                        canProceed
+                        canProceed && !isSaving
                           ? "hover:scale-[1.02] active:scale-95 hover:shadow-[0_12px_48px_rgba(249,197,213,0.6)] cursor-pointer"
                           : "opacity-50 cursor-not-allowed"
                       }
@@ -411,13 +447,20 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
                     <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/10 to-transparent"></div>
 
                     <span
-                      className="relative text-lg md:text-xl text-[#1a3d32]"
+                      className="relative text-lg md:text-xl text-[#1a3d32] flex items-center justify-center gap-2"
                       style={{
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 600,
                       }}
                     >
-                      Proceed to Payment
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Saving Order...
+                        </>
+                      ) : (
+                        "Proceed to Payment"
+                      )}
                     </span>
                   </button>
 
