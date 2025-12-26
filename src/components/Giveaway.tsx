@@ -1,6 +1,5 @@
 import { Gift, Sparkles, Star } from "lucide-react";
 import { useState } from "react";
-import { saveGiveawayEntry } from "../lib/api";
 
 export function Giveaway() {
   const [name, setName] = useState("");
@@ -8,27 +7,22 @@ export function Giveaway() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    try {
-      await saveGiveawayEntry(name, email);
-      
+    // Simulate form submission
+    setTimeout(() => {
+      setIsSubmitting(false);
       setIsSubmitted(true);
-      setName("");
-      setEmail("");
       
       // Reset after 3 seconds
       setTimeout(() => {
         setIsSubmitted(false);
+        setName("");
+        setEmail("");
       }, 3000);
-    } catch (error) {
-      console.error("Error entering giveaway:", error);
-      alert("Failed to enter giveaway. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, 1000);
   };
 
   // Floating confetti positions

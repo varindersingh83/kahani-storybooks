@@ -3,7 +3,7 @@ import { Mail, BookOpen, Box, ArrowRight, ArrowLeft, Check } from "lucide-react"
 
 interface ProductSelectionProps {
   onBack: () => void;
-  onNext: (productType: string, productName: string) => void;
+  onNext: () => void;
 }
 
 type ProductType = "digital" | "printed" | "playset";
@@ -32,7 +32,7 @@ export function ProductSelection({ onBack, onNext }: ProductSelectionProps) {
     {
       id: "playset",
       name: "Full Playset",
-      price: "$89.99",
+      price: "$35.99",
       icon: Box,
       description: "Includes book, collectible figurines, and a cardboard stage.",
       buttonStyle: "filled",
@@ -45,10 +45,7 @@ export function ProductSelection({ onBack, onNext }: ProductSelectionProps) {
 
   const handleNext = () => {
     if (selectedProduct) {
-      const product = products.find(p => p.id === selectedProduct);
-      if (product) {
-        onNext(selectedProduct, product.name);
-      }
+      onNext();
     }
   };
 

@@ -1,15 +1,9 @@
 import { useState, useRef } from "react";
-import { Camera, X, ArrowRight, ArrowLeft, Upload, Loader2 } from "lucide-react";
-import { uploadPhotos } from "../lib/api";
+import { Camera, X, ArrowRight, ArrowLeft, Upload } from "lucide-react";
 
 interface UploadPersonalizeProps {
   onBack: () => void;
-  onNext: (personalization: {
-    childName: string;
-    childAge: number;
-    dedication?: string;
-    photoUrls: string[];
-  }) => void;
+  onNext: () => void;
 }
 
 interface UploadedPhoto {
@@ -21,7 +15,6 @@ interface UploadedPhoto {
 export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
   const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     childName: "",
     age: "",
@@ -76,28 +69,6 @@ export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
   };
 
   const canProceed = photos.length > 0 && formData.childName && formData.age;
-
-  const handleNext = async () => {
-    if (!canProceed || isUploading) return;
-
-    setIsUploading(true);
-    try {
-      // Upload photos to Supabase Storage
-      const photoUrls = await uploadPhotos(photos);
-
-      // Pass personalization data to parent
-      onNext({
-        childName: formData.childName,
-        childAge: parseInt(formData.age),
-        dedication: formData.dedication || undefined,
-        photoUrls,
-      });
-    } catch (error) {
-      console.error('Error uploading photos:', error);
-      alert('Failed to upload photos. Please try again.');
-      setIsUploading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
@@ -357,12 +328,12 @@ export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
 
                 {/* Next Button */}
                 <button
-                  onClick={handleNext}
-                  disabled={!canProceed || isUploading}
+                  onClick={onNext}
+                  disabled={!canProceed}
                   className={`
                     group relative px-10 py-4 rounded-full overflow-hidden transition-all duration-300 shadow-lg
                     ${
-                      canProceed && !isUploading
+                      canProceed
                         ? "hover:scale-105 active:scale-95 hover:shadow-[0_12px_48px_rgba(249,197,213,0.6)] cursor-pointer"
                         : "opacity-50 cursor-not-allowed"
                     }
@@ -375,38 +346,21 @@ export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
                   <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/10 to-transparent"></div>
 
                   <div className="relative flex items-center gap-3">
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 text-[#5b4b44] animate-spin" strokeWidth={2.5} />
-                        <span
-                          className="text-base md:text-lg text-[#5b4b44]"
-                          style={{
-                            fontFamily: "'Inter', sans-serif",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Uploading...
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span
-                          className="text-base md:text-lg text-[#5b4b44]"
-                          style={{
-                            fontFamily: "'Inter', sans-serif",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Next
-                        </span>
-                        <ArrowRight
-                          className={`w-5 h-5 text-[#5b4b44] ${
-                            canProceed ? "transition-transform duration-300 group-hover:translate-x-1" : ""
-                          }`}
-                          strokeWidth={2.5}
-                        />
-                      </>
-                    )}
+                    <span
+                      className="text-base md:text-lg text-[#5b4b44]"
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Next
+                    </span>
+                    <ArrowRight
+                      className={`w-5 h-5 text-[#5b4b44] ${
+                        canProceed ? "transition-transform duration-300 group-hover:translate-x-1" : ""
+                      }`}
+                      strokeWidth={2.5}
+                    />
                   </div>
                 </button>
               </div>
