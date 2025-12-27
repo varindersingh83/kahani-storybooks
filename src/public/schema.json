@@ -66,7 +66,7 @@
       },
       "offers": {
         "@type": "Offer",
-        "price": "49.99",
+        "price": "32.99",
         "priceCurrency": "USD",
         "availability": "https://schema.org/InStock",
         "url": "https://www.kahanistorybooks.com/create"
@@ -88,7 +88,7 @@
       },
       "offers": {
         "@type": "Offer",
-        "price": "179.99",
+        "price": "35.99",
         "priceCurrency": "USD",
         "availability": "https://schema.org/InStock",
         "url": "https://www.kahanistorybooks.com/create"
@@ -117,7 +117,7 @@
           "name": "How much does Kahani cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Kahani offers three products: Digital PDF for $9.99, Printed Storybook for $49.99, and Full Playset with figurine for $179.99."
+            "text": "Kahani offers three products: Digital PDF for $9.99, Printed Storybook for $32.99, and Full Playset with figurine for $35.99."
           }
         },
         {

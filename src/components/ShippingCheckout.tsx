@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { ArrowLeft, CreditCard, Lock, Mail, BookOpen, Box } from "lucide-react";
+import { getProductPrice, getProductName, PRODUCT_PRICES } from "../lib/prices";
 
 interface ShippingCheckoutProps {
   onBack: () => void;
   onNext: () => void;
   selectedProduct?: {
-    id: string;
+    id: "digital" | "printed" | "playset";
     name: string;
     price: string;
   };
@@ -24,10 +25,11 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
   });
 
   // Use provided product or default to Printed Book
+  const productId = selectedProduct?.id || "printed";
   const product = selectedProduct || {
-    id: "printed",
-    name: "Printed Book",
-    price: "$49.99",
+    id: productId,
+    name: getProductName(productId),
+    price: getProductPrice(productId),
   };
 
   const handleInputChange = (

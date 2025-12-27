@@ -3,6 +3,7 @@ import { ProductSelection } from "./ProductSelection";
 import { UploadPersonalize } from "./UploadPersonalize";
 import { ShippingCheckout } from "./ShippingCheckout";
 import { OrderConfirmation } from "./OrderConfirmation";
+import { getProductName, getProductPrice } from "../lib/prices";
 
 interface CreateFlowProps {
   onBack: () => void;
@@ -10,6 +11,7 @@ interface CreateFlowProps {
 
 export function CreateFlow({ onBack }: CreateFlowProps) {
   const [currentStep, setCurrentStep] = useState(2);
+  const [selectedProductId, setSelectedProductId] = useState<"digital" | "printed" | "playset">("printed");
 
   const handleBackToIntro = () => {
     onBack(); // Go back to home page
@@ -23,7 +25,10 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
     setCurrentStep(3);
   };
 
-  const handleNextFromProductSelection = () => {
+  const handleNextFromProductSelection = (productId?: "digital" | "printed" | "playset") => {
+    if (productId) {
+      setSelectedProductId(productId);
+    }
     setCurrentStep(3);
   };
 
@@ -45,7 +50,7 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
       <OrderConfirmation 
         onReturnHome={handleReturnHome}
         orderNumber="#KHN1025"
-        productName="Printed Book"
+        productName={getProductName(selectedProductId)}
         customerEmail="your@email.com"
       />
     );
@@ -57,6 +62,11 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
       <ShippingCheckout 
         onBack={handleBackToUpload}
         onNext={handleNextFromShipping}
+        selectedProduct={{
+          id: selectedProductId,
+          name: getProductName(selectedProductId),
+          price: getProductPrice(selectedProductId),
+        }}
       />
     );
   }

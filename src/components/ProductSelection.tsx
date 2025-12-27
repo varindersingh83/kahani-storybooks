@@ -1,9 +1,10 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Mail, BookOpen, Box, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { PRODUCT_PRICES, getProductPrice, getProductName } from "../lib/prices";
 
 interface ProductSelectionProps {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (selectedProductId?: "digital" | "printed" | "playset") => void;
 }
 
 type ProductType = "digital" | "printed" | "playset";
@@ -23,16 +24,16 @@ export function ProductSelection({ onBack, onNext }: ProductSelectionProps) {
   const products: Product[] = [
     {
       id: "printed",
-      name: "Printed Book",
-      price: "$32.99",
+      name: getProductName("printed"),
+      price: getProductPrice("printed"),
       icon: BookOpen,
       description: "Hardcover edition with your child's name on the cover.",
       buttonStyle: "filled",
     },
     {
       id: "playset",
-      name: "Full Playset",
-      price: "$35.99",
+      name: getProductName("playset"),
+      price: getProductPrice("playset"),
       icon: Box,
       description: "Includes book, collectible figurines, and a cardboard stage.",
       buttonStyle: "filled",
@@ -45,7 +46,7 @@ export function ProductSelection({ onBack, onNext }: ProductSelectionProps) {
 
   const handleNext = () => {
     if (selectedProduct) {
-      onNext();
+      onNext(selectedProduct);
     }
   };
 
