@@ -101,4 +101,57 @@
   - The `server.js` file is development-only and won't be used in production
   - Vite build output goes to `dist/` which Vercel will serve
   - The frontend will automatically use `/api/slack-notify` endpoint in production
+
+  ## Analytics
+
+  The site includes analytics tracking with two options:
+
+  ### 1. Vercel Analytics (Automatic)
+  - **Status:** ✅ Already enabled
+  - Automatically tracks page views and Web Vitals
+  - Privacy-friendly and GDPR compliant
+  - No configuration needed - works out of the box on Vercel deployments
+
+  ### 2. Google Analytics 4 (Optional)
+  - **Status:** Available but requires configuration
+  - To enable Google Analytics 4:
+    1. Create a GA4 property at https://analytics.google.com/
+    2. Get your Measurement ID (format: `G-XXXXXXXXXX`)
+    3. Add it to your environment variables:
+       - **Development:** Create a `.env.local` file with:
+         ```
+         VITE_GA4_MEASUREMENT_ID=G-XXXXXXXXXX
+         ```
+       - **Production (Vercel):** Add `VITE_GA4_MEASUREMENT_ID` in Vercel dashboard
+    4. Restart your dev server or redeploy
+
+  ### Analytics Features:
+  - ✅ Automatic page view tracking
+  - ✅ Custom event tracking (button clicks, form submissions, purchases)
+  - ✅ E-commerce tracking support
+  - ✅ Privacy-compliant (respects Do Not Track)
+
+  ### Usage in Code:
+  ```typescript
+  import { trackEvent, trackButtonClick, trackPurchase } from './lib/analytics';
+  
+  // Track custom events
+  trackEvent('custom_event', { key: 'value' });
+  
+  // Track button clicks
+  trackButtonClick('Create Yours Button', '/home');
+  
+  // Track purchases
+  trackPurchase({
+    transaction_id: '12345',
+    value: 49.99,
+    currency: 'USD',
+    items: [{
+      item_id: 'book-1',
+      item_name: 'Printed Book',
+      price: 49.99,
+      quantity: 1
+    }]
+  });
+  ```
   

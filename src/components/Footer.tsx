@@ -1,4 +1,5 @@
 import { Sparkles, Instagram } from "lucide-react";
+import { trackSocialClick } from "../lib/analytics";
 
 export function Footer() {
   return (
@@ -70,6 +71,10 @@ export function Footer() {
             {/* Instagram */}
             <a
               href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                trackSocialClick("instagram");
+              }}
               className="group relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-[#FFB5D8]/20 to-[#FFB5D8]/10 border border-[#FFB5D8]/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:from-[#FFB5D8]/30 hover:to-[#FFB5D8]/20"
               aria-label="Instagram"
             >
@@ -82,6 +87,10 @@ export function Footer() {
             {/* TikTok */}
             <a
               href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                trackSocialClick("tiktok");
+              }}
               className="group relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-[#B5D8FF]/20 to-[#B5D8FF]/10 border border-[#B5D8FF]/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:from-[#B5D8FF]/30 hover:to-[#B5D8FF]/20"
               aria-label="TikTok"
             >
@@ -97,6 +106,10 @@ export function Footer() {
             {/* YouTube */}
             <a
               href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                trackSocialClick("youtube");
+              }}
               className="group relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-[#B3E5D0]/20 to-[#B3E5D0]/10 border border-[#B3E5D0]/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:from-[#B3E5D0]/30 hover:to-[#B3E5D0]/20"
               aria-label="YouTube"
             >

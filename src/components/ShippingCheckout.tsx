@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, CreditCard, Lock, Mail, BookOpen, Box } from "lucide-react";
 import { getProductPrice, getProductName, PRODUCT_PRICES } from "../lib/prices";
 import { sendSlackNotification } from "../lib/notifications";
+import { trackPurchase, trackFormSubmit } from "../lib/analytics";
 
 interface ShippingCheckoutProps {
   onBack: () => void;
@@ -45,6 +46,12 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
   const handleProceedToPayment = async () => {
     console.log("💳 Proceeding to payment...", formData);
     
+    // Track form submission
+    trackFormSubmit("shipping_checkout", {
+      product_id: product.id,
+      product_name: product.name,
+    });
+    
     // Generate order number
     const orderNumber = `#KHN${Date.now().toString().slice(-6)}`;
     console.log("📝 Generated order number:", orderNumber);
@@ -56,6 +63,22 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
       `${formData.city}, ${formData.state} ${formData.zipCode}`,
       formData.country
     ].filter(Boolean).join(', ');
+    
+    // Track purchase conversion (most important for marketing)
+    const productPrice = parseFloat(product.price.replace('$', ''));
+    trackPurchase({
+      transaction_id: orderNumber,
+      value: productPrice,
+      currency: "USD",
+      product_id: product.id,
+      product_name: product.name,
+      items: [{
+        item_id: product.id,
+        item_name: product.name,
+        price: productPrice,
+        quantity: 1,
+      }],
+    });
     
     // Send Slack notification (non-blocking)
     console.log("🚀 Attempting to send Slack notification...");

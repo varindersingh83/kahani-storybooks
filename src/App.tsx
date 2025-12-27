@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { BeforeAfterSlider } from "./components/BeforeAfterSlider";
 import { HowItWorks } from "./components/HowItWorks";
 import { CustomBookShowcase } from "./components/CustomBookShowcase";
@@ -11,6 +12,7 @@ import { Footer } from "./components/Footer";
 import { CreateFlow } from "./components/CreateFlow";
 import { ContactUs } from "./components/ContactUs";
 import { PrivacyPolicy } from "./components/PrivacyPolicy";
+import { trackPageView, trackButtonClick, trackSectionView } from "./lib/analytics";
 import beforeImage from "figma:asset/9f08c189907bc232b9c2ac2539894b434c5b4d8f.png";
 import afterImage from "figma:asset/e02f688464fb6af4e9198a62d0926517c0dd83c2.png";
 
@@ -18,6 +20,11 @@ type Page = "home" | "create" | "contact" | "privacy";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
+
+  // Track page views for analytics
+  useEffect(() => {
+    trackPageView(currentPage);
+  }, [currentPage]);
 
   // Set page title and meta tags for SEO/AEO
   useEffect(() => {
@@ -119,7 +126,7 @@ export default function App() {
   // Listen for navigation events from footer and other components
   useEffect(() => {
     const handleNavigate = (e: Event) => {
-      const customEvent = e as CustomEvent;
+      const customEvent = e as Event & { detail: string };
       const destination = customEvent.detail;
       if (destination === "privacy") {
         setCurrentPage("privacy");
@@ -134,6 +141,44 @@ export default function App() {
     return () =>
       window.removeEventListener("navigate", handleNavigate);
   }, []);
+
+  // Track section views with intersection observer
+  useEffect(() => {
+    if (currentPage !== "home") return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.5,
+    };
+
+    const trackedSections = new Set<string>();
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionName = entry.target.getAttribute('data-section');
+          if (sectionName && !trackedSections.has(sectionName)) {
+            trackedSections.add(sectionName);
+            trackSectionView(sectionName);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    
+    // Observe sections after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      const sections = document.querySelectorAll('[data-section]');
+      sections.forEach((section) => observer.observe(section));
+    }, 500);
+
+    return () => {
+      observer.disconnect();
+      trackedSections.clear();
+    };
+  }, [currentPage]);
 
   // Route to different pages
   if (currentPage === "create") {
@@ -202,7 +247,13 @@ export default function App() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6">
               <button
-                onClick={() => setCurrentPage("create")}
+                onClick={() => {
+                  trackButtonClick("Create Yours", "/home", { 
+                    button_type: "primary_cta",
+                    section: "hero" 
+                  });
+                  setCurrentPage("create");
+                }}
                 className="group relative px-8 md:px-10 py-4 md:py-5 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-2xl"
               >
                 {/* Mint Gradient Background */}
@@ -217,7 +268,20 @@ export default function App() {
                 </span>
               </button>
 
-              <button className="group px-8 md:px-10 py-4 md:py-5 rounded-full bg-[#FFF8F0] border-2 border-gray-300/60 hover:border-gray-400/80 transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">
+              <button 
+                onClick={() => {
+                  trackButtonClick("How It Works", "/home", { 
+                    button_type: "secondary_cta",
+                    section: "hero" 
+                  });
+                  // Scroll to How It Works section if needed
+                  const howItWorksSection = document.querySelector('[data-section="how_it_works"]');
+                  if (howItWorksSection) {
+                    howItWorksSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="group px-8 md:px-10 py-4 md:py-5 rounded-full bg-[#FFF8F0] border-2 border-gray-300/60 hover:border-gray-400/80 transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+              >
                 <span
                   className="text-lg md:text-xl text-[#2d2d2d] font-medium"
                   style={{ fontFamily: "'Inter', sans-serif" }}
@@ -234,28 +298,45 @@ export default function App() {
       </div>
 
       {/* How It Works Section */}
-      <HowItWorks />
+      <div data-section="how_it_works">
+        <HowItWorks />
+      </div>
 
       {/* Custom Book Showcase Section */}
-      <CustomBookShowcase />
+      <div data-section="book_showcase">
+        <CustomBookShowcase />
+      </div>
 
       {/* Figurine Showcase Section */}
-      <FigurineShowcase />
+      <div data-section="figurine_showcase">
+        <FigurineShowcase />
+      </div>
 
       {/* Unboxing Section */}
-      <UnboxingSection />
+      <div data-section="unboxing">
+        <UnboxingSection />
+      </div>
 
       {/* FAQ Section */}
-      <FAQ />
+      <div data-section="faq">
+        <FAQ />
+      </div>
 
       {/* Testimonials Section */}
-      <Testimonials />
+      <div data-section="testimonials">
+        <Testimonials />
+      </div>
 
       {/* Giveaway Section */}
-      <Giveaway />
+      <div data-section="giveaway">
+        <Giveaway />
+      </div>
 
       {/* Footer */}
       <Footer />
+
+      {/* Analytics */}
+      <Analytics />
 
       {/* Google Fonts */}
       <link

@@ -4,6 +4,7 @@ import { UploadPersonalize } from "./UploadPersonalize";
 import { ShippingCheckout } from "./ShippingCheckout";
 import { OrderConfirmation } from "./OrderConfirmation";
 import { getProductName, getProductPrice } from "../lib/prices";
+import { trackProductSelection, trackCheckoutStep } from "../lib/analytics";
 
 interface CreateFlowProps {
   onBack: () => void;
@@ -35,17 +36,24 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
   const handleNextFromProductSelection = (productId?: "digital" | "printed" | "playset") => {
     if (productId) {
       setSelectedProductId(productId);
+      // Track product selection
+      const productName = getProductName(productId);
+      const productPrice = getProductPrice(productId);
+      trackProductSelection(productId, productName, parseFloat(productPrice.replace('$', '')));
     }
     setCurrentStep(3);
+    trackCheckoutStep(3, "upload_personalize");
   };
 
   const handleNextFromUpload = () => {
     setCurrentStep(4);
+    trackCheckoutStep(4, "shipping_checkout");
   };
 
   const handleNextFromShipping = (orderInfo?: { orderNumber: string; customerEmail: string; customerName: string }) => {
     if (orderInfo) {
       setOrderData(orderInfo);
+      trackCheckoutStep(5, "order_confirmation");
     }
     setCurrentStep(5);
   };
