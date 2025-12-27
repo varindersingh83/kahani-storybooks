@@ -118,7 +118,8 @@ export function OrderConfirmation({
                   fontWeight: 400,
                 }}
               >
-                We've received your order and our artists are beginning to bring your story to life.
+                No payment today.<br />
+                We have your request. Our team will contact you to finalize everything.
               </p>
 
               {/* Order Details Block */}

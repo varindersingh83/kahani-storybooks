@@ -1,0 +1,5 @@
+# Development-only files (not needed for Vercel deployment)
+server.js
+test-slack-notification.html
+test-slack.js
+

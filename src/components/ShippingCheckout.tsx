@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { ArrowLeft, CreditCard, Lock, Mail, BookOpen, Box } from "lucide-react";
 import { getProductPrice, getProductName, PRODUCT_PRICES } from "../lib/prices";
+import { sendSlackNotification } from "../lib/notifications";
 
 interface ShippingCheckoutProps {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (orderInfo?: { orderNumber: string; customerEmail: string; customerName: string }) => void;
   selectedProduct?: {
     id: "digital" | "printed" | "playset";
     name: string;
@@ -41,9 +42,41 @@ export function ShippingCheckout({ onBack, onNext, selectedProduct }: ShippingCh
     }));
   };
 
-  const handleProceedToPayment = () => {
-    console.log("Proceeding to payment...", formData);
-    onNext();
+  const handleProceedToPayment = async () => {
+    console.log("💳 Proceeding to payment...", formData);
+    
+    // Generate order number
+    const orderNumber = `#KHN${Date.now().toString().slice(-6)}`;
+    console.log("📝 Generated order number:", orderNumber);
+    
+    // Prepare shipping address
+    const shippingAddress = [
+      formData.addressLine1,
+      formData.addressLine2,
+      `${formData.city}, ${formData.state} ${formData.zipCode}`,
+      formData.country
+    ].filter(Boolean).join(', ');
+    
+    // Send Slack notification (non-blocking)
+    console.log("🚀 Attempting to send Slack notification...");
+    sendSlackNotification({
+      orderNumber,
+      customerName: formData.fullName,
+      customerEmail: formData.email,
+      productName: product.name,
+      productPrice: product.price,
+      shippingAddress
+    }).catch(error => {
+      // Error already logged in the function, just continue
+      console.error('⚠️ Notification error (non-blocking):', error);
+    });
+    
+    // Pass order data to next step
+    onNext({
+      orderNumber,
+      customerEmail: formData.email,
+      customerName: formData.fullName
+    });
   };
 
   const canProceed =

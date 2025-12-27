@@ -9,9 +9,16 @@ interface CreateFlowProps {
   onBack: () => void;
 }
 
+interface OrderData {
+  orderNumber: string;
+  customerEmail: string;
+  customerName: string;
+}
+
 export function CreateFlow({ onBack }: CreateFlowProps) {
   const [currentStep, setCurrentStep] = useState(2);
   const [selectedProductId, setSelectedProductId] = useState<"digital" | "printed" | "playset">("printed");
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   const handleBackToIntro = () => {
     onBack(); // Go back to home page
@@ -36,7 +43,10 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
     setCurrentStep(4);
   };
 
-  const handleNextFromShipping = () => {
+  const handleNextFromShipping = (orderInfo?: { orderNumber: string; customerEmail: string; customerName: string }) => {
+    if (orderInfo) {
+      setOrderData(orderInfo);
+    }
     setCurrentStep(5);
   };
 
@@ -49,9 +59,9 @@ export function CreateFlow({ onBack }: CreateFlowProps) {
     return (
       <OrderConfirmation 
         onReturnHome={handleReturnHome}
-        orderNumber="#KHN1025"
+        orderNumber={orderData?.orderNumber || `#KHN${Date.now().toString().slice(-6)}`}
         productName={getProductName(selectedProductId)}
-        customerEmail="your@email.com"
+        customerEmail={orderData?.customerEmail || "your@email.com"}
       />
     );
   }

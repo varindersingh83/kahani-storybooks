@@ -48,3 +48,7 @@ temp/
 
 # Design drop folder (contains extracted design exports)
 design-drop/
+
+# Test files
+test-slack-notification.html
+test-slack.js
