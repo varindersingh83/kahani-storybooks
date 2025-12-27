@@ -70,9 +70,10 @@ export function Footer() {
           <div className="flex justify-center md:justify-end items-center gap-6 order-2 md:order-3">
             {/* Instagram */}
             <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
+              href="https://www.instagram.com/kahanistorybooks"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
                 trackSocialClick("instagram");
               }}
               className="group relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-[#FFB5D8]/20 to-[#FFB5D8]/10 border border-[#FFB5D8]/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:from-[#FFB5D8]/30 hover:to-[#FFB5D8]/20"
@@ -86,9 +87,10 @@ export function Footer() {
 
             {/* TikTok */}
             <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
+              href="https://www.tiktok.com/@kahanistorybooks"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
                 trackSocialClick("tiktok");
               }}
               className="group relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-[#B5D8FF]/20 to-[#B5D8FF]/10 border border-[#B5D8FF]/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:from-[#B5D8FF]/30 hover:to-[#B5D8FF]/20"
@@ -100,25 +102,6 @@ export function Footer() {
                 fill="currentColor"
               >
                 <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
-              </svg>
-            </a>
-
-            {/* YouTube */}
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                trackSocialClick("youtube");
-              }}
-              className="group relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-[#B3E5D0]/20 to-[#B3E5D0]/10 border border-[#B3E5D0]/30 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:from-[#B3E5D0]/30 hover:to-[#B3E5D0]/20"
-              aria-label="YouTube"
-            >
-              <svg
-                className="w-5 h-5 md:w-6 md:h-6 text-[#B88FFF] transition-colors group-hover:text-[#7DFFAF]"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
               </svg>
             </a>
           </div>
