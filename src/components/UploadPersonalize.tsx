@@ -1,63 +1,17 @@
-import { useState, useRef } from "react";
-import { Camera, X, ArrowRight, ArrowLeft, Upload } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 
 interface UploadPersonalizeProps {
   onBack: () => void;
   onNext: () => void;
 }
 
-interface UploadedPhoto {
-  id: string;
-  url: string;
-  name: string;
-}
-
 export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
-  const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
   const [formData, setFormData] = useState({
     childName: "",
     age: "",
     dedication: "",
   });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) return;
-
-    const newPhotos: UploadedPhoto[] = [];
-    Array.from(files).forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const url = URL.createObjectURL(file);
-        newPhotos.push({
-          id: Math.random().toString(36),
-          url,
-          name: file.name,
-        });
-      }
-    });
-
-    setPhotos((prev) => [...prev, ...newPhotos].slice(0, 2)); // Max 2 photos
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFileUpload(e.dataTransfer.files);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const removePhoto = (id: string) => {
-    setPhotos((prev) => prev.filter((photo) => photo.id !== id));
-  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -68,7 +22,7 @@ export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
     }));
   };
 
-  const canProceed = photos.length > 0 && formData.childName && formData.age;
+  const canProceed = formData.childName && formData.age;
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
@@ -102,7 +56,7 @@ export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
                   fontWeight: 600,
                 }}
               >
-                Upload & Personalize
+                Personalize
               </h2>
 
               {/* Subheading */}
@@ -113,108 +67,9 @@ export function UploadPersonalize({ onBack, onNext }: UploadPersonalizeProps) {
                   fontWeight: 400,
                 }}
               >
-                Add your child's photo and details to make the story uniquely theirs.
+                Add details to make the story uniquely theirs.
               </p>
 
-              {/* Upload Area */}
-              <div className="mb-8">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/jpg"
-                  multiple
-                  onChange={(e) => handleFileUpload(e.target.files)}
-                  className="hidden"
-                />
-
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  className={`
-                    relative cursor-pointer rounded-[24px] border-3 border-dashed p-8 md:p-12 transition-all duration-300
-                    ${
-                      isDragging
-                        ? "border-[#f9c5d5] bg-[#f9c5d5]/10 scale-[1.02]"
-                        : "border-[#e5d4e8] bg-[#fdf6f3]/50 hover:border-[#d9c5e0] hover:bg-[#fdf6f3]"
-                    }
-                  `}
-                >
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    {/* Icon */}
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[#f9e6df] to-[#fde4d9] flex items-center justify-center border-2 border-white/60 shadow-lg">
-                      <Camera
-                        className="w-8 h-8 md:w-10 md:h-10 text-[#c9a89c]"
-                        strokeWidth={2}
-                      />
-                    </div>
-
-                    {/* Text */}
-                    <div className="text-center">
-                      <p
-                        className="text-lg md:text-xl text-[#5b4b44] mb-2"
-                        style={{
-                          fontFamily: "'Inter', sans-serif",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Upload 1–2 photos
-                      </p>
-                      <p
-                        className="text-sm md:text-base text-[#8b7b74]"
-                        style={{
-                          fontFamily: "'Inter', sans-serif",
-                          fontWeight: 400,
-                        }}
-                      >
-                        .jpg or .png • Drag and drop or click to browse
-                      </p>
-                    </div>
-
-                    {/* Upload Icon */}
-                    <Upload
-                      className="w-5 h-5 text-[#c9a89c]"
-                      strokeWidth={2}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Photo Thumbnails */}
-              {photos.length > 0 && (
-                <div className="mb-8">
-                  <p
-                    className="text-sm md:text-base text-[#8b7b74] mb-4"
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Uploaded Photos ({photos.length}/2)
-                  </p>
-                  <div className="flex flex-wrap gap-4">
-                    {photos.map((photo) => (
-                      <div
-                        key={photo.id}
-                        className="relative group w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-[#e5d4e8] shadow-md"
-                      >
-                        <img
-                          src={photo.url}
-                          alt={photo.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          onClick={() => removePhoto(photo.id)}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg hover:bg-white hover:scale-110"
-                        >
-                          <X className="w-4 h-4 text-[#5b4b44]" strokeWidth={2.5} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Form Fields */}
               <div className="space-y-6">
