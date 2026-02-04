@@ -1,0 +1,41 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Ensure proper scroll container positioning */
+html, body {
+  position: relative;
+}
+
+/* 3D Diorama Effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Radial gradient utility */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+/* Glass reflection effects */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Soft material shadows for diorama objects */
+.shadow-diorama {
+  box-shadow: 
+    0 20px 60px -15px rgba(0, 0, 0, 0.15),
+    0 10px 30px -10px rgba(0, 0, 0, 0.1),
+    0 4px 12px -4px rgba(0, 0, 0, 0.08);
+}
+
+/* Transform preserve-3d utility */
+.transform-3d {
+  transform-style: preserve-3d;
+}
