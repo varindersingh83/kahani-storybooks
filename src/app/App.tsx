@@ -13,12 +13,12 @@ import hero4 from '../assets/images/hero-section/4.webp';
 import hero5 from '../assets/images/hero-section/5.webp';
 
 // Best Sellers images
-import bs1 from '../assets/images/best-sellers-section/1BS.webp';
-import bs2 from '../assets/images/best-sellers-section/12BS.webp';
-import bs3 from '../assets/images/best-sellers-section/3BSs.webp';
-import bs4 from '../assets/images/best-sellers-section/4BS.webp';
-import bs5 from '../assets/images/best-sellers-section/5bs.webp';
-import bs6 from '../assets/images/best-sellers-section/6bs.webp';
+import bs1 from '../assets/images/best-sellers-section/1AP.webp';
+import bs2 from '../assets/images/best-sellers-section/1CM.webp';
+import bs3 from '../assets/images/best-sellers-section/1M.webp';
+import bs4 from '../assets/images/best-sellers-section/2M.webp';
+import bs5 from '../assets/images/best-sellers-section/3AP.webp';
+import bs6 from '../assets/images/best-sellers-section/3P.webp';
 
 // Figurines images
 import fig1 from '../assets/images/figurines-section/1F.webp';
