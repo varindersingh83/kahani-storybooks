@@ -4,12 +4,56 @@ import { useRef, useState, useEffect, MouseEvent, ReactNode, createContext, useC
 import ReactDOM from 'react-dom';
 import { createHashRouter, RouterProvider, Link, useNavigate } from 'react-router-dom';
 
+
 // Hero carousel images (local assets)
 import hero1 from '../assets/images/hero-section/1.webp';
 import hero2 from '../assets/images/hero-section/2.webp';
 import hero3 from '../assets/images/hero-section/3.webp';
 import hero4 from '../assets/images/hero-section/4.webp';
 import hero5 from '../assets/images/hero-section/5.webp';
+
+// Best Sellers images
+import bs1 from '../assets/images/best-sellers-section/1AP.webp';
+import bs2 from '../assets/images/best-sellers-section/1CM.webp';
+import bs3 from '../assets/images/best-sellers-section/1M.webp';
+import bs4 from '../assets/images/best-sellers-section/2M.webp';
+import bs5 from '../assets/images/best-sellers-section/3AP.webp';
+import bs6 from '../assets/images/best-sellers-section/3P.webp';
+
+// Figurines images
+import fig1 from '../assets/images/figurines-section/1F.webp';
+import fig2 from '../assets/images/figurines-section/2F.webp';
+import fig3 from '../assets/images/figurines-section/3F.webp';
+import fig4 from '../assets/images/figurines-section/4F - Copy.webp';
+import fig5 from '../assets/images/figurines-section/5F.webp';
+import fig6 from '../assets/images/figurines-section/6F.webp';
+
+// Pick Your Style images
+import style1 from '../assets/images/pick-your-style-section/1P.webp';
+import style2 from '../assets/images/pick-your-style-section/2P.webp';
+import style3 from '../assets/images/pick-your-style-section/3P.webp';
+import style4 from '../assets/images/pick-your-style-section/4P.webp';
+
+// Refined & Sophisticated images
+import refined1 from '../assets/images/refined-sophisticated-section/1M.webp';
+import refined2 from '../assets/images/refined-sophisticated-section/2M.webp';
+import refined3 from '../assets/images/refined-sophisticated-section/3M.webp';
+
+// Vibrant & Playful images
+import vibrant1 from '../assets/images/vibrant-playful-section/1P.webp';
+import vibrant2 from '../assets/images/vibrant-playful-section/2P.webp';
+import vibrant3 from '../assets/images/vibrant-playful-section/3P.webp';
+
+// Handcrafted with Love images
+import handcrafted1 from '../assets/images/handcrafted-with-love-section/1AP.webp';
+import handcrafted2 from '../assets/images/handcrafted-with-love-section/2AP.webp';
+import handcrafted3 from '../assets/images/handcrafted-with-love-section/3AP.webp';
+
+// Bold & Heroic images
+import bold1 from '../assets/images/bold-heroic-section/1CM.webp';
+import bold2 from '../assets/images/bold-heroic-section/2CM.webp';
+import bold3 from '../assets/images/bold-heroic-section/3CM.webp';
+
 
 // Cart Context
 interface CartItem {
@@ -100,7 +144,7 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
     } else {
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
-    }
+    };
     return () => {
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
@@ -652,6 +696,7 @@ const DioramaStage = ({ children, className = '' }: DioramaStageProps) => {
 
 // Component: ProductCard
 interface ProductCardProps {
+  id: number;
   image: string;
   title: string;
   description: string;
@@ -660,8 +705,25 @@ interface ProductCardProps {
   delay?: number;
 }
 
-const ProductCard = ({ image, title, description, price, category, delay = 0 }: ProductCardProps) => {
+const ProductCard = ({ id, image, title, description, price, category, delay = 0 }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart({
+      id,
+      title,
+      image,
+      customizations: {
+        childName: 'Default Child', // Placeholder
+        age: '3-4', // Placeholder
+        pages: '20', // Placeholder
+        character: 'Default Character', // Placeholder
+      },
+      quantity: 1,
+      price: parseFloat(price.replace('$', '')),
+    });
+  };
 
   return (
     <motion.div
@@ -980,8 +1042,8 @@ const CarouselSection = () => {
                   }}
                   transition={{ duration: 0.3 }}
                   className={`h-2 rounded-full transition-all duration-500 ${index === currentIndex
-                      ? 'w-8 bg-gradient-to-r from-rose-400 to-amber-400'
-                      : 'w-2 bg-gray-300'
+                    ? 'w-8 bg-gradient-to-r from-rose-400 to-amber-400'
+                    : 'w-2 bg-gray-300'
                     }`}
                 />
               ))}
@@ -997,7 +1059,7 @@ const CarouselSection = () => {
 const products = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1589123066574-165d71809555?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZHJlbiUyMGJvb2slMjBwZXJzb25hbGl6ZWR8ZW58MXx8fHwxNzY4ODk4MzI4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: bs1,
     title: 'The Adventure Begins',
     description: 'A magical journey where your child becomes the hero of their own story',
     price: '$32',
@@ -1005,7 +1067,7 @@ const products = [
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1638262306483-32b4be71fde8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjB0b3klMjBmaWd1cmluZXxlbnwxfHx8fDE3Njg4OTgxODJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: bs2,
     title: 'Woodland Friends Set',
     description: 'Handcrafted wooden figurines that spark imagination and gentle play',
     price: '$48',
@@ -1013,7 +1075,7 @@ const products = [
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1666888735993-6ed30a900f36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraWRzJTIwc3Rvcnlib29rJTIwcmVhZGluZ3xlbnwxfHx8fDE3Njg4OTgzMjl8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: bs3,
     title: 'Bedtime Tales Collection',
     description: 'Soothing stories personalized with your little one\'s name and favorite things',
     price: '$36',
@@ -1021,7 +1083,7 @@ const products = [
   },
   {
     id: 4,
-    image: 'https://images.unsplash.com/photo-1736067780889-740ea83acad9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjBhbmltYWwlMjB0b3lzfGVufDF8fHx8MTc2ODg5ODE4M3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    image: bs4,
     title: 'Safari Explorer Set',
     description: 'Beautifully crafted animal figurines made from sustainable wood',
     price: '$52',
@@ -1029,7 +1091,7 @@ const products = [
   },
   {
     id: 5,
-    image: 'https://images.unsplash.com/photo-1767773472788-e52930e58e72?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb25hbGl6ZWQlMjBjaGlsZHJlbiUyMGdpZnR8ZW58MXx8fHwxNzY4ODk4MzMwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: bs5,
     title: 'Birthday Dreams',
     description: 'A celebration story that makes their special day even more memorable',
     price: '$34',
@@ -1037,7 +1099,7 @@ const products = [
   },
   {
     id: 6,
-    image: 'https://images.unsplash.com/photo-1617743832107-44726db6ace2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b3klMjBmaWd1cmluZSUyMG1pbmltYWx8ZW58MXx8fHwxNzY4ODk4MzMwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: bs6,
     title: 'Character Collection',
     description: 'Minimalist wooden figures that inspire creative storytelling',
     price: '$44',
@@ -1049,7 +1111,7 @@ const products = [
 const figurines = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1638262306483-32b4be71fde8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjB0b3klMjBmaWd1cmluZXxlbnwxfHx8fDE3Njg4OTgxODJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: fig1,
     title: 'Woodland Friends Set',
     description: 'Handcrafted wooden figurines that spark imagination and gentle play',
     price: '$48',
@@ -1057,7 +1119,7 @@ const figurines = [
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1736067780889-740ea83acad9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjBhbmltYWwlMjB0b3lzfGVufDF8fHx8MTc2ODg5ODE4M3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    image: fig2,
     title: 'Safari Explorer Set',
     description: 'Beautifully crafted animal figurines made from sustainable wood',
     price: '$52',
@@ -1065,7 +1127,7 @@ const figurines = [
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1617743832107-44726db6ace2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b3klMjBmaWd1cmluZSUyMG1pbmltYWx8ZW58MXx8fHwxNzY4ODk4MzMwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: fig3,
     title: 'Character Collection',
     description: 'Minimalist wooden figures that inspire creative storytelling',
     price: '$44',
@@ -1073,7 +1135,7 @@ const figurines = [
   },
   {
     id: 4,
-    image: 'https://images.unsplash.com/photo-1748603606183-d33f49595bc1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjB0b3klMjBmaWd1cmluZXN8ZW58MXx8fHwxNzY4OTg3NDgxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    image: fig4,
     title: 'Artisan Animal Friends',
     description: 'Timeless wooden companions that become cherished keepsakes',
     price: '$56',
@@ -1081,7 +1143,7 @@ const figurines = [
   },
   {
     id: 5,
-    image: 'https://images.unsplash.com/photo-1766423221865-aa4c19c66f0e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYW5kY3JhZnRlZCUyMGNoaWxkcmVuJTIwdG95c3xlbnwxfHx8fDE3Njg5ODc0ODF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    image: fig5,
     title: 'Handcrafted Heroes',
     description: 'Each piece lovingly shaped to inspire hours of imaginative adventures',
     price: '$50',
@@ -1089,7 +1151,7 @@ const figurines = [
   },
   {
     id: 6,
-    image: 'https://images.unsplash.com/photo-1766933330352-81ff095ad04a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcnRpc2FuJTIwd29vZGVuJTIwYW5pbWFsc3xlbnwxfHx8fDE3Njg5ODc0ODJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    image: fig6,
     title: 'Nature\'s Treasures',
     description: 'Artisan-crafted wooden creatures from sustainable forests',
     price: '$54',
@@ -1424,7 +1486,7 @@ function LandingPage() {
                 <div className="relative bg-gradient-to-br from-slate-100 via-gray-50 to-white rounded-3xl overflow-hidden shadow-xl border border-gray-200/50">
                   <div className="aspect-[4/3] relative overflow-hidden">
                     <motion.img
-                      src="https://images.unsplash.com/photo-1643310117130-e375e34b9b80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbW9kZXJuJTIwYm9va3xlbnwxfHx8fDE3Njg5ODYwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                      src={style1}
                       alt="Modern Minimalist"
                       className="w-full h-full object-cover"
                       whileHover={{ scale: 1.05 }}
@@ -1463,7 +1525,7 @@ function LandingPage() {
                 <div className="relative bg-gradient-to-br from-sky-100 via-purple-50 to-pink-50 rounded-3xl overflow-hidden shadow-xl border border-purple-200/50">
                   <div className="aspect-[4/3] relative overflow-hidden">
                     <motion.img
-                      src="https://images.unsplash.com/photo-1759775062184-64c2f4a12e85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaXhhciUyMGRpc25leSUyMGFuaW1hdGlvbnxlbnwxfHx8fDE3Njg5ODYwMDF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                      src={style2}
                       alt="Pixar Magic"
                       className="w-full h-full object-cover"
                       whileHover={{ scale: 1.05 }}
@@ -1502,7 +1564,7 @@ function LandingPage() {
                 <div className="relative bg-gradient-to-br from-teal-50 via-emerald-50 to-green-50 rounded-3xl overflow-hidden shadow-xl border border-teal-200/50">
                   <div className="aspect-[4/3] relative overflow-hidden">
                     <motion.img
-                      src="https://images.unsplash.com/photo-1695154207190-64df5b9c1e6d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3YXRlcmNvbG9yJTIwcGFpbnRpbmclMjBhcnR8ZW58MXx8fHwxNzY4OTAyNjc4fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                      src={style3}
                       alt="Artisan Painted"
                       className="w-full h-full object-cover"
                       whileHover={{ scale: 1.05 }}
@@ -1541,7 +1603,7 @@ function LandingPage() {
                 <div className="relative bg-gradient-to-br from-red-100 via-orange-50 to-yellow-50 rounded-3xl overflow-hidden shadow-xl border border-red-200/50">
                   <div className="aspect-[4/3] relative overflow-hidden">
                     <motion.img
-                      src="https://images.unsplash.com/photo-1759863738666-7584248cdf7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21pYyUyMGJvb2slMjBpbGx1c3RyYXRpb258ZW58MXx8fHwxNzY4OTg2MDAxfDA&ixlib=rb-4.1.0&q=80&w=1080"
+                      src={style4}
                       alt="Comic Adventure"
                       className="w-full h-full object-cover"
                       whileHover={{ scale: 1.05 }}
@@ -1599,7 +1661,7 @@ function LandingPage() {
               {[
                 {
                   id: 101,
-                  image: 'https://images.unsplash.com/photo-1759977064094-840dfc694bee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZHJlbiUyMGJvb2slMjBtb2Rlcm58ZW58MXx8fHwxNzY4OTg2MDA1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: refined1,
                   title: 'The Quiet Garden',
                   description: 'A serene journey through minimalist landscapes',
                   price: '$38',
@@ -1607,7 +1669,7 @@ function LandingPage() {
                 },
                 {
                   id: 102,
-                  image: 'https://images.unsplash.com/photo-1643310117130-e375e34b9b80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwbW9kZXJuJTIwYm9va3xlbnwxfHx8fDE3Njg5ODYwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: refined2,
                   title: 'Shapes & Shadows',
                   description: 'Geometric elegance meets storytelling',
                   price: '$34',
@@ -1615,7 +1677,7 @@ function LandingPage() {
                 },
                 {
                   id: 103,
-                  image: 'https://images.unsplash.com/photo-1638262306483-32b4be71fde8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjB0b3klMjBmaWd1cmluZXxlbnwxfHx8fDE3Njg4OTgxODJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: refined3,
                   title: 'Nordic Collection',
                   description: 'Scandinavian-inspired wooden figures',
                   price: '$56',
@@ -1660,7 +1722,7 @@ function LandingPage() {
               {[
                 {
                   id: 201,
-                  image: 'https://images.unsplash.com/photo-1767557125491-b3483567d843?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXJ0b29uJTIwY2hhcmFjdGVyJTIwY29sb3JmdWx8ZW58MXx8fHwxNzY4OTg2MDA2fDA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: vibrant1,
                   title: 'Rainbow Adventures',
                   description: 'Colorful characters embark on magical quests',
                   price: '$36',
@@ -1668,7 +1730,7 @@ function LandingPage() {
                 },
                 {
                   id: 202,
-                  image: 'https://images.unsplash.com/photo-1759775062184-64c2f4a12e85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaXhhciUyMGRpc25leSUyMGFuaW1hdGlvbnxlbnwxfHx8fDE3Njg5ODYwMDF8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: vibrant2,
                   title: 'Happy Town Tales',
                   description: 'Joyful stories in a world of endless wonder',
                   price: '$34',
@@ -1676,7 +1738,7 @@ function LandingPage() {
                 },
                 {
                   id: 203,
-                  image: 'https://images.unsplash.com/photo-1638262306483-32b4be71fde8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjB0b3klMjBmaWd1cmluZXxlbnwxfHx8fDE3Njg4OTgxODJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: vibrant3,
                   title: 'Friendship Squad',
                   description: 'Playful character figurines that inspire friendship',
                   price: '$52',
@@ -1721,7 +1783,7 @@ function LandingPage() {
               {[
                 {
                   id: 301,
-                  image: 'https://images.unsplash.com/photo-1695154207190-64df5b9c1e6d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3YXRlcmNvbG9yJTIwcGFpbnRpbmclMjBhcnR8ZW58MXx8fHwxNzY4OTAyNjc4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: handcrafted1,
                   title: 'Meadow Dreams',
                   description: 'Soft watercolor illustrations of nature\'s beauty',
                   price: '$42',
@@ -1729,7 +1791,7 @@ function LandingPage() {
                 },
                 {
                   id: 302,
-                  image: 'https://images.unsplash.com/photo-1603027862808-3661a3fb6923?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYW5kJTIwcGFpbnRlZCUyMGlsbHVzdHJhdGlvbnxlbnwxfHx8fDE3Njg5ODYwMDZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: handcrafted2,
                   title: 'Forest Whispers',
                   description: 'Delicate hand-painted woodland tales',
                   price: '$40',
@@ -1737,7 +1799,7 @@ function LandingPage() {
                 },
                 {
                   id: 303,
-                  image: 'https://images.unsplash.com/photo-1638262306483-32b4be71fde8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjB0b3klMjBmaWd1cmluZXxlbnwxfHx8fDE3Njg4OTgxODJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: handcrafted3,
                   title: 'Garden Friends',
                   description: 'Hand-painted wooden creatures with artistic charm',
                   price: '$58',
@@ -1782,7 +1844,7 @@ function LandingPage() {
               {[
                 {
                   id: 401,
-                  image: 'https://images.unsplash.com/photo-1759863738666-7584248cdf7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21pYyUyMGJvb2slMjBpbGx1c3RyYXRpb258ZW58MXx8fHwxNzY4OTg2MDAxfDA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: bold1,
                   title: 'Super Kid Origins',
                   description: 'Your child becomes the ultimate superhero',
                   price: '$36',
@@ -1790,7 +1852,7 @@ function LandingPage() {
                 },
                 {
                   id: 402,
-                  image: 'https://images.unsplash.com/photo-1687803151700-555141919170?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdXBlcmhlcm8lMjB0b3klMjBmaWd1cmV8ZW58MXx8fHwxNzY4OTg2MDA2fDA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: bold2,
                   title: 'Power Heroes',
                   description: 'Bold graphic novel adventures with your name',
                   price: '$38',
@@ -1798,7 +1860,7 @@ function LandingPage() {
                 },
                 {
                   id: 403,
-                  image: 'https://images.unsplash.com/photo-1638262306483-32b4be71fde8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b29kZW4lMjB0b3klMjBmaWd1cmluZXxlbnwxfHx8fDE3Njg4OTgxODJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                  image: bold3,
                   title: 'Action Squad',
                   description: 'Dynamic hero figurines ready for adventure',
                   price: '$54',
@@ -2707,8 +2769,8 @@ function ProductDetailPage() {
                     onClick={() => setSelectedImage(idx)}
                     whileHover={{ scale: 1.05 }}
                     className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === idx
-                        ? 'border-rose-400 shadow-md'
-                        : 'border-gray-200 opacity-60 hover:opacity-100'
+                      ? 'border-rose-400 shadow-md'
+                      : 'border-gray-200 opacity-60 hover:opacity-100'
                       }`}
                   >
                     <img src={img} alt={`Product view ${idx + 1}`} className="w-full h-full object-cover" />
@@ -2775,8 +2837,8 @@ function ProductDetailPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`px-4 py-2.5 rounded-xl text-sm transition-all ${selectedAge === age
-                          ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
-                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                        ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
                         }`}
                     >
                       {age}
@@ -2796,8 +2858,8 @@ function ProductDetailPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`px-4 py-2.5 rounded-xl text-sm transition-all ${selectedPages === pages
-                          ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
-                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                        ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
                         }`}
                     >
                       {pages}
@@ -2817,8 +2879,8 @@ function ProductDetailPage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className={`px-4 py-2.5 rounded-xl text-sm transition-all ${selectedCharacters === character
-                          ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
-                          : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                        ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
                         }`}
                     >
                       {character}
@@ -3134,8 +3196,8 @@ function PersonalizationPage() {
                     whileHover={{ y: -8 }}
                     onClick={() => setSelectedBook(book.id)}
                     className={`relative cursor-pointer bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-300 ${selectedBook === book.id
-                        ? 'ring-4 ring-rose-400 shadow-2xl'
-                        : 'hover:shadow-xl'
+                      ? 'ring-4 ring-rose-400 shadow-2xl'
+                      : 'hover:shadow-xl'
                       }`}
                   >
                     {selectedBook === book.id && (
@@ -3479,8 +3541,8 @@ function PersonalizationPage() {
               onClick={handleContinue}
               disabled={!canContinue()}
               className={`px-8 py-3 rounded-xl font-medium transition-all ${canContinue()
-                  ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-lg hover:shadow-xl'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-lg hover:shadow-xl'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
             >
               Preview Book
