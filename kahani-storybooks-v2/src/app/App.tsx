@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform, useMotionValue } from 'motion/react';
 import { Star, Shield, Heart, Truck, ShoppingBag, User, Sparkles, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Mail, Music, X, Upload, Info, Check } from 'lucide-react';
-import { useRef, useState, useEffect, MouseEvent, ReactNode, createContext, useContext } from 'react';
+import { Suspense, lazy, useRef, useState, useEffect, MouseEvent, ReactNode, createContext, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { createHashRouter, RouterProvider, Link, useNavigate } from 'react-router-dom';
 
@@ -134,7 +134,7 @@ interface LoginModalProps {
   onLogin: () => void;
 }
 
-const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
+export const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
   // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -287,7 +287,7 @@ interface HeaderProps {
   cartItemCount?: number;
 }
 
-const Header = ({ isLoggedIn = false, onLoginClick = () => { }, cartItemCount = 0 }: HeaderProps) => {
+export const Header = ({ isLoggedIn = false, onLoginClick = () => { }, cartItemCount = 0 }: HeaderProps) => {
   const headerRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
 
@@ -318,22 +318,24 @@ const Header = ({ isLoggedIn = false, onLoginClick = () => { }, cartItemCount = 
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2 cursor-pointer"
-          >
+          <Link to="/">
             <motion.div
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.6 }}
-              className="w-11 h-11 rounded-full bg-gradient-to-br from-rose-400 to-amber-400 flex items-center justify-center shadow-lg"
-              style={{
-                boxShadow: '0 4px 12px rgba(251,113,133,0.3), 0 2px 6px rgba(0,0,0,0.1)'
-              }}
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-2 cursor-pointer"
             >
-              <span className="text-white text-lg">✨</span>
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+                className="w-11 h-11 rounded-full bg-gradient-to-br from-rose-400 to-amber-400 flex items-center justify-center shadow-lg"
+                style={{
+                  boxShadow: '0 4px 12px rgba(251,113,133,0.3), 0 2px 6px rgba(0,0,0,0.1)'
+                }}
+              >
+                <span className="text-white text-lg">✨</span>
+              </motion.div>
+              <span className="text-xl text-gray-900">KAHANI</span>
             </motion.div>
-            <span className="text-xl text-gray-900">KAHANI</span>
-          </motion.div>
+          </Link>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
@@ -616,7 +618,7 @@ const Hero = () => {
               transition={{ duration: 1, delay: 0.4, type: "spring", stiffness: 60 }}
               className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto pb-4"
             >
-              Personalized books and handcrafted figurines designed to create magical moments.
+              Personalized books and custom figurines designed to create magical moments.
               Each piece is lovingly made to celebrate the unique child in your life.
             </motion.p>
           </div>
@@ -782,7 +784,7 @@ const ProductCard = ({ id, image, title, description, price, category, delay = 0
           {/* Category Badge */}
           <div className="absolute top-4 left-4">
             <span className="px-4 py-1.5 rounded-full text-xs backdrop-blur-md bg-white/70 text-gray-700 border border-white/50 shadow-sm">
-              {category === 'book' ? 'Personalized Book' : 'Handcrafted Figurine'}
+              {category === 'book' ? 'Personalized Book' : 'Custom Figurine'}
             </span>
           </div>
         </div>
@@ -797,7 +799,7 @@ const ProductCard = ({ id, image, title, description, price, category, delay = 0
             {description}
           </p>
           <div className="flex items-center justify-center pt-2 relative mt-auto">
-            <Link to="/product/1">
+            <Link to={`/product/${id}`}>
               <motion.button
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
@@ -826,37 +828,37 @@ const carouselItems: CarouselItem[] = [
   {
     id: 1,
     image: hero1,
-    title: 'The Adventure Begins',
+    title: 'The Adventure of Leo',
     category: 'Personalized Book',
-    price: '$32',
+    price: '$49',
   },
   {
     id: 2,
     image: hero2,
-    title: 'Woodland Friends & Story',
+    title: 'The Pajama Adventure',
     category: 'Book + Figurine Set',
-    price: '$68',
+    price: '$129',
   },
   {
     id: 3,
     image: hero3,
-    title: 'Bedtime Tales Collection',
-    category: 'Personalized Book',
-    price: '$36',
+    title: "Amelia's Cozy Day",
+    category: 'Book + Figurine Set',
+    price: '$129',
   },
   {
     id: 4,
     image: hero4,
-    title: 'My Magical Journey',
-    category: 'Personalized Book',
-    price: '$34',
+    title: "Alfred's Garden Adventure",
+    category: 'Book + Figurine Set',
+    price: '$129',
   },
   {
     id: 5,
     image: hero5,
-    title: 'Hero Character Collection',
-    category: 'Handcrafted Figurine',
-    price: '$48',
+    title: 'The Sleepy-time Adventure',
+    category: 'Book + Figurine Set',
+    price: '$129',
   }
 ];
 
@@ -1060,49 +1062,49 @@ const products = [
   {
     id: 1,
     image: bs1,
-    title: 'The Adventure Begins',
-    description: 'A magical journey where your child becomes the hero of their own story',
-    price: '$32',
+    title: 'Our Little One',
+    description: 'A heartwarming keepsake celebrating the magic of your baby\'s first years',
+    price: '$129',
     category: 'book' as const,
   },
   {
     id: 2,
     image: bs2,
-    title: 'Woodland Friends Set',
-    description: 'Handcrafted wooden figurines that spark imagination and gentle play',
-    price: '$48',
+    title: 'Super Toddler!',
+    description: 'An action-packed adventure where your little one saves the day',
+    price: '$129',
     category: 'figurine' as const,
   },
   {
     id: 3,
     image: bs3,
-    title: 'Bedtime Tales Collection',
-    description: 'Soothing stories personalized with your little one\'s name and favorite things',
-    price: '$36',
+    title: 'The Adventure of Kevin',
+    description: 'A customized tale where your child embarks on a journey of discovery',
+    price: '$129',
     category: 'book' as const,
   },
   {
     id: 4,
     image: bs4,
-    title: 'Safari Explorer Set',
-    description: 'Beautifully crafted animal figurines made from sustainable wood',
-    price: '$52',
+    title: 'A Little Story',
+    description: 'A gentle and charming story perfect for sharing quiet moments together',
+    price: '$129',
     category: 'figurine' as const,
   },
   {
     id: 5,
     image: bs5,
-    title: 'Birthday Dreams',
-    description: 'A celebration story that makes their special day even more memorable',
-    price: '$34',
+    title: 'Lily\'s Adventure',
+    description: 'A whimsical journey through enchanted woods filled with wonder and delight',
+    price: '$129',
     category: 'book' as const,
   },
   {
     id: 6,
     image: bs6,
-    title: 'Character Collection',
-    description: 'Minimalist wooden figures that inspire creative storytelling',
-    price: '$44',
+    title: 'Ema\'s Grand Adventures',
+    description: 'Inspire big dreams with a story about exploring the world\'s wonders',
+    price: '$129',
     category: 'figurine' as const,
   },
 ];
@@ -1110,51 +1112,51 @@ const products = [
 // Figurines-only products
 const figurines = [
   {
-    id: 1,
+    id: 501,
     image: fig1,
-    title: 'Woodland Friends Set',
-    description: 'Handcrafted wooden figurines that spark imagination and gentle play',
-    price: '$48',
+    title: 'The Adventurer',
+    description: 'Ready for play in his favorite everyday outfit',
+    price: '$99',
     category: 'figurine' as const,
   },
   {
-    id: 2,
+    id: 502,
     image: fig2,
-    title: 'Safari Explorer Set',
-    description: 'Beautifully crafted animal figurines made from sustainable wood',
-    price: '$52',
+    title: 'Sweet Dreams',
+    description: 'Soft colors and comfort for peaceful play',
+    price: '$99',
     category: 'figurine' as const,
   },
   {
-    id: 3,
+    id: 503,
     image: fig3,
-    title: 'Character Collection',
-    description: 'Minimalist wooden figures that inspire creative storytelling',
-    price: '$44',
+    title: 'Urban Explorer',
+    description: 'Stay warm on every outdoor adventure',
+    price: '$99',
     category: 'figurine' as const,
   },
   {
-    id: 4,
+    id: 504,
     image: fig4,
-    title: 'Artisan Animal Friends',
-    description: 'Timeless wooden companions that become cherished keepsakes',
-    price: '$56',
+    title: 'Playful Spirit',
+    description: 'Brightening the day with a splash of flowers',
+    price: '$99',
     category: 'figurine' as const,
   },
   {
-    id: 5,
+    id: 505,
     image: fig5,
-    title: 'Handcrafted Heroes',
-    description: 'Each piece lovingly shaped to inspire hours of imaginative adventures',
-    price: '$50',
+    title: 'Best Friends Duo',
+    description: 'Double the fun with this inseparable pair',
+    price: '$99',
     category: 'figurine' as const,
   },
   {
-    id: 6,
+    id: 506,
     image: fig6,
-    title: 'Nature\'s Treasures',
-    description: 'Artisan-crafted wooden creatures from sustainable forests',
-    price: '$54',
+    title: 'The Whole Gang',
+    description: 'A complete set of friends for epic storytelling',
+    price: '$99',
     category: 'figurine' as const,
   },
 ];
@@ -1183,7 +1185,7 @@ const features = [
 ];
 
 // Component: Footer
-const Footer = () => {
+export const Footer = () => {
   const scrollToSection = (sectionId: string) => {
     // If we're not on home page, navigate home first
     if (window.location.hash !== '#/') {
@@ -1435,7 +1437,7 @@ function LandingPage() {
               transition={{ duration: 0.8 }}
               className="text-center space-y-4 mb-20"
             >
-              <h2 className="text-5xl text-gray-900">Handcrafted Figurines</h2>
+              <h2 className="text-5xl text-gray-900">Custom Figurines</h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                 Artisan-made wooden companions designed to inspire imagination and become treasured keepsakes.
               </p>
@@ -1481,6 +1483,12 @@ function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0 }}
                 whileHover={{ y: -8, scale: 1.02 }}
+                onClick={() => {
+                  const element = document.getElementById('refined-sophisticated');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
                 className="group cursor-pointer"
               >
                 <div className="relative bg-gradient-to-br from-slate-100 via-gray-50 to-white rounded-3xl overflow-hidden shadow-xl border border-gray-200/50">
@@ -1520,6 +1528,12 @@ function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.1 }}
                 whileHover={{ y: -8, scale: 1.02 }}
+                onClick={() => {
+                  const element = document.getElementById('vibrant-playful');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
                 className="group cursor-pointer"
               >
                 <div className="relative bg-gradient-to-br from-sky-100 via-purple-50 to-pink-50 rounded-3xl overflow-hidden shadow-xl border border-purple-200/50">
@@ -1559,6 +1573,12 @@ function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 whileHover={{ y: -8, scale: 1.02 }}
+                onClick={() => {
+                  const element = document.getElementById('handcrafted-love');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
                 className="group cursor-pointer"
               >
                 <div className="relative bg-gradient-to-br from-teal-50 via-emerald-50 to-green-50 rounded-3xl overflow-hidden shadow-xl border border-teal-200/50">
@@ -1598,6 +1618,12 @@ function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.3 }}
                 whileHover={{ y: -8, scale: 1.02 }}
+                onClick={() => {
+                  const element = document.getElementById('bold-heroic');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
                 className="group cursor-pointer"
               >
                 <div className="relative bg-gradient-to-br from-red-100 via-orange-50 to-yellow-50 rounded-3xl overflow-hidden shadow-xl border border-red-200/50">
@@ -1636,7 +1662,7 @@ function LandingPage() {
 
       {/* Modern Minimalist Best Sellers */}
       <DioramaStage className="py-12 pb-8">
-        <section className="relative">
+        <section id="refined-sophisticated" className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-slate-50/60 via-gray-50/40 to-white pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-slate-300/20 via-gray-200/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
@@ -1662,25 +1688,25 @@ function LandingPage() {
                 {
                   id: 101,
                   image: refined1,
-                  title: 'The Quiet Garden',
-                  description: 'A serene journey through minimalist landscapes',
-                  price: '$38',
+                  title: 'The Adventure of Kevin',
+                  description: 'A timeless tale of curiosity and wonder',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 102,
                   image: refined2,
-                  title: 'Shapes & Shadows',
-                  description: 'Geometric elegance meets storytelling',
-                  price: '$34',
+                  title: 'A Little Story',
+                  description: 'Simple moments that create lasting memories',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 103,
                   image: refined3,
-                  title: 'Nordic Collection',
-                  description: 'Scandinavian-inspired wooden figures',
-                  price: '$56',
+                  title: 'The Sunbeam Smile',
+                  description: 'Spreading joy and warmth to everyone around',
+                  price: '$129',
                   category: 'figurine' as const,
                 },
               ].map((product, index) => (
@@ -1697,7 +1723,7 @@ function LandingPage() {
 
       {/* Pixar Magic Best Sellers */}
       <DioramaStage className="py-12 pb-8">
-        <section className="relative">
+        <section id="vibrant-playful" className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-purple-50/60 via-pink-50/40 to-sky-50/30 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-purple-300/20 via-pink-300/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
@@ -1723,25 +1749,25 @@ function LandingPage() {
                 {
                   id: 201,
                   image: vibrant1,
-                  title: 'Rainbow Adventures',
-                  description: 'Colorful characters embark on magical quests',
-                  price: '$36',
+                  title: 'The Dreamer\'s Journey',
+                  description: 'Where imagination takes flight on wings of wonder',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 202,
                   image: vibrant2,
-                  title: 'Happy Town Tales',
-                  description: 'Joyful stories in a world of endless wonder',
-                  price: '$34',
+                  title: 'Leo\'s Luminous Legends',
+                  description: 'Shining bright with stories of courage and light',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 203,
                   image: vibrant3,
-                  title: 'Friendship Squad',
-                  description: 'Playful character figurines that inspire friendship',
-                  price: '$52',
+                  title: 'Ema\'s Grand Adventures',
+                  description: 'Discovering the magic hidden in every day',
+                  price: '$129',
                   category: 'figurine' as const,
                 },
               ].map((product, index) => (
@@ -1758,7 +1784,7 @@ function LandingPage() {
 
       {/* Artisan Painted Best Sellers */}
       <DioramaStage className="py-12 pb-8">
-        <section className="relative">
+        <section id="handcrafted-love" className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-teal-50/60 via-emerald-50/40 to-green-50/30 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-teal-300/20 via-emerald-300/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
@@ -1784,25 +1810,25 @@ function LandingPage() {
                 {
                   id: 301,
                   image: handcrafted1,
-                  title: 'Meadow Dreams',
-                  description: 'Soft watercolor illustrations of nature\'s beauty',
-                  price: '$42',
+                  title: 'Our Little One',
+                  description: 'Celebrating the tiny miracles that make life big',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 302,
                   image: handcrafted2,
-                  title: 'Forest Whispers',
-                  description: 'Delicate hand-painted woodland tales',
-                  price: '$40',
+                  title: 'The Adventures of Little Jake',
+                  description: 'A woodland journey tailored for your little explorer',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 303,
                   image: handcrafted3,
-                  title: 'Garden Friends',
-                  description: 'Hand-painted wooden creatures with artistic charm',
-                  price: '$58',
+                  title: 'Lily\'s Adventure',
+                  description: 'Magical moments in a garden of wonder',
+                  price: '$129',
                   category: 'figurine' as const,
                 },
               ].map((product, index) => (
@@ -1819,7 +1845,7 @@ function LandingPage() {
 
       {/* Comic Adventure Best Sellers */}
       <DioramaStage className="py-12 pb-8">
-        <section className="relative">
+        <section id="bold-heroic" className="relative">
           <div className="absolute inset-0 bg-gradient-to-b from-red-50/60 via-orange-50/40 to-yellow-50/30 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-red-300/20 via-orange-300/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
@@ -1845,25 +1871,25 @@ function LandingPage() {
                 {
                   id: 401,
                   image: bold1,
-                  title: 'Super Kid Origins',
-                  description: 'Your child becomes the ultimate superhero',
-                  price: '$36',
+                  title: 'Super Toddler!',
+                  description: 'Unleash their inner hero with this action-packed tale',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 402,
                   image: bold2,
-                  title: 'Power Heroes',
-                  description: 'Bold graphic novel adventures with your name',
-                  price: '$38',
+                  title: 'Super Baby Adventures!',
+                  description: 'Big adventures for the tiniest of heroes',
+                  price: '$129',
                   category: 'book' as const,
                 },
                 {
                   id: 403,
                   image: bold3,
-                  title: 'Action Squad',
-                  description: 'Dynamic hero figurines ready for adventure',
-                  price: '$54',
+                  title: 'Bubble Master: Adventures of the Soap Hero',
+                  description: 'Clean fun and bubbly excitement in every page',
+                  price: '$129',
                   category: 'figurine' as const,
                 },
               ].map((product, index) => (
@@ -2682,361 +2708,7 @@ function BlogPage() {
   );
 }
 
-// Component: ProductDetailPage
-function ProductDetailPage() {
-  const { cartItems } = useCart();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedAge, setSelectedAge] = useState('0-12 months old');
-  const [selectedPages, setSelectedPages] = useState('36 Pages');
-  const [selectedCharacters, setSelectedCharacters] = useState('Girl');
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-
-  // Scroll to top when page loads
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
-
-  const handleLoginClick = () => {
-    setShowLoginModal(true);
-  };
-
-  const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-  };
-
-  // Product images
-  const productImages = [
-    'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800',
-    'https://images.unsplash.com/photo-1535905557558-afc4877a26fc?w=800',
-    'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800',
-    'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800',
-    'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800',
-  ];
-
-  const customizationOptions = {
-    age: ['0-12 months old', '1-2 years old', '3-4 years old', '5-6 years old'],
-    pages: ['24 Pages', '36 Pages', '48 Pages'],
-    characters: ['Girl', 'Boy'],
-  };
-
-  const faqs = [
-    { question: 'How is this book personalized for my child?', answer: 'The book is customized with your child\'s name, photo, and characteristics you provide. Each page is uniquely crafted to tell their story.' },
-    { question: 'What if I need to make changes after personalizing?', answer: 'You can edit your personalization details anytime before we start printing. Once printing begins, changes may not be possible.' },
-    { question: 'Size & Quality', answer: 'Our books are premium quality, measuring 8.5" x 11" with thick, durable pages and vibrant, fade-resistant printing.' },
-  ];
-
-  const reviews = [
-    { name: 'Su', rating: 5, text: 'I am mad, absolutely, I\'ll buy this gift, all pregnant mother! I beessed.. I...' },
-    { name: 'RiRi2003', rating: 5, text: 'Whyy short! I love it!!!' },
-    { name: 'Diana', rating: 4, text: 'Really was stop about empathy and tenderness plus your daughter is the main character, so it\'s really special' },
-    { name: 'Ellen Ardo', rating: 5, text: 'My daughter! And absolutely loves princesses and she could seeing herself as a geal. Great idea for a present, very special' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-rose-50/30 via-white to-amber-50/20">
-      {/* Header */}
-      <Header isLoggedIn={isLoggedIn} onLoginClick={handleLoginClick} cartItemCount={cartItemCount} />
-
-      {/* Login Modal */}
-      {showLoginModal && (
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onLogin={handleLogin}
-          isSignUp={false}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Left Column - Images */}
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              {/* Thumbnail Gallery */}
-              <div className="flex flex-col gap-3">
-                {productImages.map((img, idx) => (
-                  <motion.button
-                    key={idx}
-                    onClick={() => setSelectedImage(idx)}
-                    whileHover={{ scale: 1.05 }}
-                    className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === idx
-                      ? 'border-rose-400 shadow-md'
-                      : 'border-gray-200 opacity-60 hover:opacity-100'
-                      }`}
-                  >
-                    <img src={img} alt={`Product view ${idx + 1}`} className="w-full h-full object-cover" />
-                  </motion.button>
-                ))}
-              </div>
-
-              {/* Main Image */}
-              <div className="flex-1 rounded-3xl overflow-hidden bg-gradient-to-br from-rose-50/60 via-peach-50/50 to-amber-50/40 shadow-[0_20px_60px_rgba(0,0,0,0.12)]">
-                <motion.img
-                  key={selectedImage}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  src={productImages[selectedImage]}
-                  alt="Product main view"
-                  className="w-full h-auto object-cover"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Details */}
-          <div className="space-y-6">
-            {/* Product Title & Description */}
-            <div>
-              <h1 className="mb-4">Princess Girl, the One We All Needed</h1>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                When kindness calls—even the smallest acts can change everything. In this enchanting personalized tale, a Princess helps a suffering girl through kindness, bravery, and heart-discovery. Each page weaves your hero's picture and their strength, sharing the way, we come face to face with our compassion and our brightest magic of all.
-              </p>
-
-              {/* Features */}
-              <div className="space-y-2 mb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Sparkles className="w-4 h-4 text-rose-400" />
-                  <span>Preview available before ordering</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Heart className="w-4 h-4 text-rose-400" />
-                  <span>Top-Sold nationally, calculate, and staff-fav!</span>
-                </div>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-3 mb-6">
-                <span className="text-gray-400 line-through text-lg">$55.00</span>
-                <span className="text-3xl font-semibold text-gray-900">$43.99</span>
-                <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-600 text-sm font-medium">
-                  Save 20%
-                </span>
-              </div>
-            </div>
-
-            {/* Customization Options */}
-            <div className="space-y-4 p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
-              {/* Age Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {customizationOptions.age.map((age) => (
-                    <motion.button
-                      key={age}
-                      onClick={() => setSelectedAge(age)}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`px-4 py-2.5 rounded-xl text-sm transition-all ${selectedAge === age
-                        ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-                        }`}
-                    >
-                      {age}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Pages Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pages</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {customizationOptions.pages.map((pages) => (
-                    <motion.button
-                      key={pages}
-                      onClick={() => setSelectedPages(pages)}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`px-4 py-2.5 rounded-xl text-sm transition-all ${selectedPages === pages
-                        ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-                        }`}
-                    >
-                      {pages}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Characters Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Characters</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {customizationOptions.characters.map((character) => (
-                    <motion.button
-                      key={character}
-                      onClick={() => setSelectedCharacters(character)}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`px-4 py-2.5 rounded-xl text-sm transition-all ${selectedCharacters === character
-                        ? 'bg-gradient-to-r from-rose-400 to-amber-400 text-white shadow-md'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-                        }`}
-                    >
-                      {character}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Personalize Button */}
-            <Link to="/personalize" className="block">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-400 to-amber-400 text-white font-medium text-lg shadow-lg hover:shadow-xl transition-all"
-              >
-                Personalize
-              </motion.button>
-            </Link>
-
-            {/* Payment Icons */}
-            <div className="flex items-center justify-center gap-3 pt-2">
-              <div className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded">VISA</div>
-              <div className="px-3 py-1.5 bg-white border border-gray-300 text-xs font-semibold rounded">mastercard</div>
-              <div className="px-3 py-1.5 bg-orange-500 text-white text-xs font-semibold rounded flex items-center gap-1">
-                <ShoppingBag className="w-3 h-3" />
-              </div>
-              <div className="px-3 py-1.5 bg-white border border-gray-300 text-xs font-semibold rounded flex items-center gap-1">
-                <span className="text-blue-600">V</span>
-              </div>
-              <div className="px-3 py-1.5 bg-blue-700 text-white text-xs font-semibold rounded">VISA</div>
-            </div>
-
-            {/* Expandable Sections */}
-            <div className="space-y-3 pt-4">
-              {faqs.map((faq, idx) => (
-                <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
-                    className="w-full px-5 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="text-sm font-medium text-gray-700">{faq.question}</span>
-                    <motion.div
-                      animate={{ rotate: expandedFaq === idx ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ChevronDown className="w-5 h-5 text-gray-400" />
-                    </motion.div>
-                  </button>
-                  <motion.div
-                    initial={false}
-                    animate={{ height: expandedFaq === idx ? 'auto' : 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-5 py-4 bg-gray-50 text-sm text-gray-600 leading-relaxed border-t border-gray-200">
-                      {faq.answer}
-                    </div>
-                  </motion.div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Reviews Section */}
-        <div className="mt-16 space-y-8">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 mb-2">
-              <span className="text-2xl font-semibold">Rated 4.8 out of 5</span>
-            </div>
-            <div className="flex items-center justify-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 fill-amber-400 text-amber-400" />
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            {reviews.map((review, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-medium text-gray-900">{review.name}</span>
-                  <div className="flex items-center gap-1">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 leading-relaxed">{review.text}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Adored by millions worldwide */}
-        <div className="mt-16 p-12 rounded-3xl bg-gradient-to-br from-rose-50/60 via-peach-50/50 to-amber-50/40 text-center">
-          <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">How others personalized their stories</p>
-          <h2 className="mb-8">Adored by<br />millions worldwide</h2>
-          <div className="flex items-center justify-center gap-6">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
-              <img src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=200" alt="Happy customer" className="w-full h-full object-cover" />
-            </div>
-            <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl transform rotate-6">
-              <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400" alt="Personalized book" className="w-full h-full object-cover" />
-            </div>
-          </div>
-        </div>
-
-        {/* Frequently Asked Questions */}
-        <div className="mt-16">
-          <h2 className="text-center mb-8">Frequently Asked Questions</h2>
-          <div className="max-w-3xl mx-auto space-y-3">
-            {[
-              'How do I place an order?',
-              'Do you ship for studios?',
-              'Can I get a refund for my order?',
-              'How long does shipping take?',
-              'Will I have to pay duties or extra fees?',
-              'What if I\'m not happy with my order?',
-              'How can I reach Customer support?',
-              'What languages are your books available in?'
-            ].map((question, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                  <span className="text-sm font-medium text-gray-700">{question}</span>
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Back Button */}
-        <div className="mt-12 text-center">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-rose-400 hover:text-rose-500 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            Back to Home
-          </Link>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <Footer />
-    </div>
-  );
-}
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
 
 // Component: PersonalizationPage
 function PersonalizationPage() {
@@ -4032,7 +3704,11 @@ const router = createHashRouter([
   },
   {
     path: "/product/:id",
-    element: <ProductDetailPage />,
+    element: (
+      <Suspense fallback={<div className="min-h-screen bg-white" />}>
+        <ProductDetailPage />
+      </Suspense>
+    ),
   },
   {
     path: "/personalize",
