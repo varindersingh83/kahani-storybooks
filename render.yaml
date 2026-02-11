@@ -2,7 +2,6 @@ databases:
   - name: kahani-v2-postgres
     databaseName: kahani_v2
     user: kahani_v2_user
-    plan: starter
 
 services:
   - type: web
