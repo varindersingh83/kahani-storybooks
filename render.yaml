@@ -47,7 +47,8 @@ services:
       - key: RESEND_API_KEY
         sync: false
 
-  - type: static
+  - type: web
+    env: static
     name: kahani-v2-frontend
     rootDir: kahani-storybooks-v2
     buildCommand: npm install && npm run build
