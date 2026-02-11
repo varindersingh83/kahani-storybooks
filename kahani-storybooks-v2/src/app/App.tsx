@@ -3,7 +3,7 @@ import { Star, Shield, Heart, Truck, ShoppingBag, User, Sparkles, ChevronLeft, C
 import { Suspense, lazy, useRef, useState, useEffect, MouseEvent, ReactNode, createContext, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { createHashRouter, RouterProvider, Link, useNavigate, useLocation } from 'react-router-dom';
-import { applyOrderDiscount, createCheckoutSession, getAdminOrders, getAuthMe, getOrderStatus, issueOrderRefund, logout, startGoogleLogin } from './lib/api';
+import { OrderComment, applyOrderDiscount, approveOrder, createCheckoutSession, createOrderComment, getAdminOrderAudit, getAdminOrders, getAuthMe, getOrderComments, getOrderStatus, issueOrderRefund, logout, reopenComment, replyToComment, resolveComment, startGoogleLogin } from './lib/api';
 
 
 // Hero carousel images (local assets)
@@ -3555,6 +3555,16 @@ function BookPreviewPage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isPreviewUnlocked, setIsPreviewUnlocked] = useState(false);
   const [previewMessage, setPreviewMessage] = useState('');
+  const [orderId, setOrderId] = useState('');
+  const [orderStatus, setOrderStatus] = useState('');
+  const [comments, setComments] = useState<OrderComment[]>([]);
+  const [commentError, setCommentError] = useState('');
+  const [commentMessage, setCommentMessage] = useState('');
+  const [newCommentByPage, setNewCommentByPage] = useState<Record<number, string>>({});
+  const [replyByCommentId, setReplyByCommentId] = useState<Record<string, string>>({});
+  const [authUser, setAuthUser] = useState<{ id: string; role: string } | null>(null);
+  const [savingComment, setSavingComment] = useState(false);
+  const [approvingOrder, setApprovingOrder] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -3569,7 +3579,9 @@ function BookPreviewPage() {
         return;
       }
       try {
+        setOrderId(lastOrderId);
         const order = await getOrderStatus(lastOrderId);
+        setOrderStatus(order.status);
         const unlocked = order.status === 'PAID' || order.status === 'PREVIEW_READY' || order.status === 'IN_REVIEW' || order.status === 'CHANGES_REQUESTED' || order.status === 'CHANGES_APPLIED' || order.status === 'APPROVED_BY_CUSTOMER' || order.status === 'PRODUCTION_READY' || order.status === 'IN_PRODUCTION' || order.status === 'SHIPPED' || order.status === 'DELIVERED' || order.status === 'COMPLETED';
         setIsPreviewUnlocked(unlocked);
         if (!unlocked) {
@@ -3593,6 +3605,113 @@ function BookPreviewPage() {
     setShowLoginModal(true);
   };
 
+  useEffect(() => {
+    const loadAuthAndComments = async () => {
+      if (!orderId || !isPreviewUnlocked) {
+        return;
+      }
+      try {
+        const me = await getAuthMe();
+        if (!me.user) {
+          setAuthUser(null);
+          setCommentError('Sign in to access comments and approve your order.');
+          return;
+        }
+        setAuthUser({ id: me.user.id, role: me.user.role });
+        setIsLoggedIn(true);
+        const rows = await getOrderComments(orderId);
+        setComments(rows);
+        setCommentError('');
+      } catch (error) {
+        setCommentError(error instanceof Error ? error.message : 'Failed to load comments');
+      }
+    };
+    void loadAuthAndComments();
+  }, [orderId, isPreviewUnlocked]);
+
+  const refreshComments = async () => {
+    if (!orderId) return;
+    const rows = await getOrderComments(orderId);
+    setComments(rows);
+  };
+
+  const handleCreateComment = async (pageNumber: number) => {
+    const body = (newCommentByPage[pageNumber] ?? '').trim();
+    if (!body || !orderId) return;
+    try {
+      setSavingComment(true);
+      setCommentError('');
+      await createOrderComment(orderId, { pageNumber, body });
+      setNewCommentByPage((prev) => ({ ...prev, [pageNumber]: '' }));
+      await refreshComments();
+      setCommentMessage(`Comment added for page ${pageNumber}.`);
+    } catch (error) {
+      setCommentError(error instanceof Error ? error.message : 'Failed to add comment');
+    } finally {
+      setSavingComment(false);
+    }
+  };
+
+  const handleReply = async (commentId: string) => {
+    const body = (replyByCommentId[commentId] ?? '').trim();
+    if (!body) return;
+    try {
+      setSavingComment(true);
+      setCommentError('');
+      await replyToComment(commentId, body);
+      setReplyByCommentId((prev) => ({ ...prev, [commentId]: '' }));
+      await refreshComments();
+      setCommentMessage('Reply sent.');
+    } catch (error) {
+      setCommentError(error instanceof Error ? error.message : 'Failed to send reply');
+    } finally {
+      setSavingComment(false);
+    }
+  };
+
+  const handleResolve = async (commentId: string) => {
+    try {
+      setSavingComment(true);
+      setCommentError('');
+      await resolveComment(commentId);
+      await refreshComments();
+    } catch (error) {
+      setCommentError(error instanceof Error ? error.message : 'Failed to resolve comment');
+    } finally {
+      setSavingComment(false);
+    }
+  };
+
+  const handleReopen = async (commentId: string) => {
+    try {
+      setSavingComment(true);
+      setCommentError('');
+      await reopenComment(commentId);
+      await refreshComments();
+    } catch (error) {
+      setCommentError(error instanceof Error ? error.message : 'Failed to reopen comment');
+    } finally {
+      setSavingComment(false);
+    }
+  };
+
+  const handleApproveOrder = async () => {
+    if (!orderId) return;
+    try {
+      setApprovingOrder(true);
+      setCommentError('');
+      const result = await approveOrder(orderId);
+      setOrderStatus(result.status);
+      setCommentMessage(`Order approved: ${result.orderNumber}`);
+    } catch (error) {
+      setCommentError(error instanceof Error ? error.message : 'Failed to approve order');
+    } finally {
+      setApprovingOrder(false);
+    }
+  };
+
+  const unresolvedComments = comments.filter((comment) => comment.status !== 'RESOLVED');
+  const canModerateComments = authUser ? ['DESIGNER', 'ADMIN', 'FINANCE_ADMIN'].includes(authUser.role) : false;
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   // Mock book pages data
@@ -3683,63 +3802,159 @@ function BookPreviewPage() {
         <div className="space-y-8">
           {bookPages.map((spread, index) => {
             const locked = !isPreviewUnlocked && index >= 1;
+            const pageNumbers = [index * 2 + 1, index * 2 + 2];
+            const spreadComments = comments.filter((comment) => pageNumbers.includes(comment.pageNumber));
             return (
-            <motion.div
-              key={spread.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`bg-white rounded-2xl shadow-xl overflow-hidden ${locked ? 'relative' : ''}`}
-            >
-              {/* Page Number */}
-              <div className="bg-gradient-to-r from-rose-100 to-amber-100 px-6 py-3 border-b border-gray-200">
-                <p className="text-sm text-gray-700 font-medium">
-                  Pages {index * 2 + 1}-{index * 2 + 2}
-                </p>
-              </div>
-
-              {/* Page Spread */}
-              <div className="grid md:grid-cols-2">
-                {/* Left Page */}
-                <div className="p-8 border-r border-gray-200">
-                  <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-rose-50 to-amber-50">
-                    <img
-                      src={spread.leftPage.image}
-                      alt={`Page ${index * 2 + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+              <div key={spread.id} className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`bg-white rounded-2xl shadow-xl overflow-hidden ${locked ? 'relative' : ''}`}
+                >
+                  <div className="bg-gradient-to-r from-rose-100 to-amber-100 px-6 py-3 border-b border-gray-200">
+                    <p className="text-sm text-gray-700 font-medium">
+                      Pages {pageNumbers[0]}-{pageNumbers[1]}
+                    </p>
                   </div>
-                  <p className="text-gray-700 text-center italic leading-relaxed">
-                    {spread.leftPage.text}
-                  </p>
-                </div>
-
-                {/* Right Page */}
-                <div className="p-8">
-                  <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-amber-50 to-rose-50">
-                    <img
-                      src={spread.rightPage.image}
-                      alt={`Page ${index * 2 + 2}`}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="grid md:grid-cols-2">
+                    <div className="p-8 border-r border-gray-200">
+                      <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-rose-50 to-amber-50">
+                        <img
+                          src={spread.leftPage.image}
+                          alt={`Page ${index * 2 + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-gray-700 text-center italic leading-relaxed">
+                        {spread.leftPage.text}
+                      </p>
+                    </div>
+                    <div className="p-8">
+                      <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-amber-50 to-rose-50">
+                        <img
+                          src={spread.rightPage.image}
+                          alt={`Page ${index * 2 + 2}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-gray-700 text-center italic leading-relaxed">
+                        {spread.rightPage.text}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-gray-700 text-center italic leading-relaxed">
-                    {spread.rightPage.text}
-                  </p>
-                </div>
+                  {locked && (
+                    <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
+                      <p className="text-xl font-medium text-gray-900 mb-2">Locked Preview</p>
+                      <p className="text-sm text-gray-600 max-w-xs">
+                        Only first 2 pages are visible until payment is completed.
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+                {!locked && isPreviewUnlocked && (
+                  <div className="bg-white rounded-2xl shadow-md p-5 space-y-4">
+                    <h3 className="text-lg text-gray-900">Comments for pages {pageNumbers[0]}-{pageNumbers[1]}</h3>
+                    {spreadComments.length === 0 && (
+                      <p className="text-sm text-gray-500">No comments yet for this spread.</p>
+                    )}
+                    {spreadComments.map((comment) => (
+                      <div key={comment.id} className="border border-gray-200 rounded-xl p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-gray-700">
+                            Page {comment.pageNumber} · {comment.user.email}
+                          </p>
+                          <span className={`text-xs px-2 py-1 rounded-full ${comment.status === 'RESOLVED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {comment.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-900">{comment.body}</p>
+                        <div className="space-y-2">
+                          {comment.replies.map((reply) => (
+                            <div key={reply.id} className="bg-gray-50 rounded-lg px-3 py-2">
+                              <p className="text-xs text-gray-500">{reply.user.email}</p>
+                              <p className="text-sm text-gray-800">{reply.body}</p>
+                            </div>
+                          ))}
+                        </div>
+                        {authUser && (
+                          <div className="space-y-2">
+                            <textarea
+                              value={replyByCommentId[comment.id] ?? ''}
+                              onChange={(event) => setReplyByCommentId((prev) => ({ ...prev, [comment.id]: event.target.value }))}
+                              placeholder="Reply to this comment"
+                              className="w-full min-h-[70px] px-3 py-2 border border-gray-200 rounded-lg"
+                            />
+                            <div className="flex gap-2 flex-wrap">
+                              <button disabled={savingComment} onClick={() => void handleReply(comment.id)} className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm">
+                                Reply
+                              </button>
+                              {comment.status !== 'RESOLVED' && (
+                                <button disabled={savingComment} onClick={() => void handleResolve(comment.id)} className="px-4 py-2 rounded-lg border border-green-300 text-green-700 text-sm">
+                                  Resolve
+                                </button>
+                              )}
+                              {comment.status === 'RESOLVED' && (
+                                <button disabled={savingComment} onClick={() => void handleReopen(comment.id)} className="px-4 py-2 rounded-lg border border-amber-300 text-amber-700 text-sm">
+                                  Reopen
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {authUser && (
+                      <div className="border-t border-gray-100 pt-4 space-y-3">
+                        {pageNumbers.map((page) => (
+                          <div key={page} className="space-y-2">
+                            <p className="text-sm text-gray-600">Add comment for page {page}</p>
+                            <textarea
+                              value={newCommentByPage[page] ?? ''}
+                              onChange={(event) => setNewCommentByPage((prev) => ({ ...prev, [page]: event.target.value }))}
+                              placeholder={`Add a new comment for page ${page}`}
+                              className="w-full min-h-[80px] px-3 py-2 border border-gray-200 rounded-lg"
+                            />
+                            <button
+                              disabled={savingComment}
+                              onClick={() => void handleCreateComment(page)}
+                              className="px-4 py-2 rounded-lg bg-gradient-to-r from-rose-400 to-amber-400 text-white text-sm"
+                            >
+                              Add Comment (Page {page})
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              {locked && (
-                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
-                  <p className="text-xl font-medium text-gray-900 mb-2">Locked Preview</p>
-                  <p className="text-sm text-gray-600 max-w-xs">
-                    Only first 2 pages are visible until payment is completed.
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          )})}
+            );
+          })}
         </div>
         {previewMessage && <p className="text-center text-amber-600 mt-4">{previewMessage}</p>}
+        {commentError && <p className="text-center text-red-500 mt-2">{commentError}</p>}
+        {commentMessage && <p className="text-center text-green-600 mt-2">{commentMessage}</p>}
+        {isPreviewUnlocked && orderId && (
+          <div className="mt-8 bg-white rounded-xl border border-gray-200 p-5 text-center space-y-3">
+            <p className="text-sm text-gray-700">
+              Order status: <span className="font-medium">{orderStatus || 'UNKNOWN'}</span>
+            </p>
+            <p className="text-sm text-gray-500">
+              Unresolved comments: {unresolvedComments.length}
+            </p>
+            <button
+              disabled={approvingOrder || unresolvedComments.length > 0 || !authUser || canModerateComments}
+              onClick={() => void handleApproveOrder()}
+              className="px-6 py-3 rounded-xl bg-gray-900 text-white disabled:bg-gray-300"
+            >
+              {approvingOrder ? 'Approving...' : 'Approve Final Order'}
+            </button>
+            {canModerateComments && (
+              <p className="text-xs text-gray-500">Designer/admin accounts can review comments but cannot submit final customer approval.</p>
+            )}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -3815,6 +4030,8 @@ function AdminPage() {
   }>>([]);
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedOrderAudit, setSelectedOrderAudit] = useState<any | null>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -3825,6 +4042,19 @@ function AdminPage() {
       setOrders(result.orders);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load orders');
+    }
+  };
+
+  const loadOrderAudit = async (nextOrderId: string) => {
+    try {
+      setAuditLoading(true);
+      const audit = await getAdminOrderAudit(nextOrderId);
+      setSelectedOrderAudit(audit.order);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load order audit');
+      setSelectedOrderAudit(null);
+    } finally {
+      setAuditLoading(false);
     }
   };
 
@@ -3948,7 +4178,10 @@ function AdminPage() {
             {orders.map((order) => (
               <button
                 key={order.id}
-                onClick={() => setOrderId(order.id)}
+                onClick={() => {
+                  setOrderId(order.id);
+                  void loadOrderAudit(order.id);
+                }}
                 className={`w-full text-left p-3 rounded-xl border ${orderId === order.id ? 'border-rose-300 bg-rose-50' : 'border-gray-200 bg-white'}`}
               >
                 <p className="text-sm text-gray-900">{order.orderNumber} · {order.status}</p>
@@ -3977,6 +4210,61 @@ function AdminPage() {
           </div>
           {message && <p className="text-sm text-green-600">{message}</p>}
           {error && <p className="text-sm text-red-500">{error}</p>}
+        </div>
+        <div className="bg-white rounded-2xl p-6 shadow-md space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl text-gray-900">Order Audit</h2>
+            {auditLoading && <span className="text-xs text-gray-500">Loading...</span>}
+          </div>
+          {!selectedOrderAudit && !auditLoading && (
+            <p className="text-sm text-gray-500">Select an order to view status history, comments, payments, and adjustments.</p>
+          )}
+          {selectedOrderAudit && (
+            <div className="space-y-5">
+              <div className="text-sm text-gray-700">
+                <p><span className="font-medium">Order:</span> {selectedOrderAudit.orderNumber}</p>
+                <p><span className="font-medium">Customer:</span> {selectedOrderAudit.customer?.email}</p>
+                <p><span className="font-medium">Status:</span> {selectedOrderAudit.status}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Status History</h3>
+                <div className="space-y-2 max-h-48 overflow-auto">
+                  {(selectedOrderAudit.statusHistory ?? []).map((event: any) => (
+                    <div key={event.id} className="text-xs border border-gray-200 rounded-lg p-2">
+                      <p>{event.fromStatus ?? 'N/A'} → {event.toStatus}</p>
+                      <p className="text-gray-500">{event.note ?? 'No note'}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Comment Threads</h3>
+                <div className="space-y-2 max-h-48 overflow-auto">
+                  {(selectedOrderAudit.comments ?? []).map((comment: any) => (
+                    <div key={comment.id} className="text-xs border border-gray-200 rounded-lg p-2">
+                      <p>Page {comment.pageNumber} · {comment.status}</p>
+                      <p className="text-gray-700">{comment.body}</p>
+                      <p className="text-gray-500">Replies: {comment.replies?.length ?? 0}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="border border-gray-200 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Payments</p>
+                  <p className="text-sm text-gray-900">{selectedOrderAudit.payments?.length ?? 0}</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Discounts</p>
+                  <p className="text-sm text-gray-900">{selectedOrderAudit.discounts?.length ?? 0}</p>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Refunds</p>
+                  <p className="text-sm text-gray-900">{selectedOrderAudit.refunds?.length ?? 0}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

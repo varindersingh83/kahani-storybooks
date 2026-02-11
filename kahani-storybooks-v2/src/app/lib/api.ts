@@ -30,6 +30,38 @@ type OrderStatusResponse = {
   createdAt: string;
 };
 
+type AuthUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+};
+
+type CommentUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+};
+
+type CommentReply = {
+  id: string;
+  body: string;
+  createdAt: string;
+  user: CommentUser;
+};
+
+export type OrderComment = {
+  id: string;
+  pageNumber: number;
+  body: string;
+  status: "OPEN" | "DESIGNER_REPLIED" | "CUSTOMER_REPLIED" | "RESOLVED" | "REOPENED";
+  createdAt: string;
+  updatedAt: string;
+  user: CommentUser;
+  replies: CommentReply[];
+};
+
 type ApplyDiscountInput = {
   orderId: string;
   discountType: "fixed" | "percent";
@@ -80,6 +112,84 @@ export async function getOrderStatus(orderId: string): Promise<OrderStatusRespon
   if (!response.ok) {
     const body = await response.text();
     throw new Error(body || "Failed to fetch order status");
+  }
+  return response.json();
+}
+
+export async function getOrderComments(orderId: string): Promise<OrderComment[]> {
+  const response = await fetch(`${backendUrl}/api/orders/${orderId}/comments`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || "Failed to fetch order comments");
+  }
+  return response.json();
+}
+
+export async function createOrderComment(
+  orderId: string,
+  input: { pageNumber: number; body: string },
+) {
+  const response = await fetch(`${backendUrl}/api/orders/${orderId}/comments`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || "Failed to create comment");
+  }
+  return response.json();
+}
+
+export async function replyToComment(commentId: string, body: string) {
+  const response = await fetch(`${backendUrl}/api/comments/${commentId}/replies`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ body }),
+  });
+  if (!response.ok) {
+    const bodyText = await response.text();
+    throw new Error(bodyText || "Failed to reply to comment");
+  }
+  return response.json();
+}
+
+export async function resolveComment(commentId: string) {
+  const response = await fetch(`${backendUrl}/api/comments/${commentId}/resolve`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || "Failed to resolve comment");
+  }
+  return response.json();
+}
+
+export async function reopenComment(commentId: string) {
+  const response = await fetch(`${backendUrl}/api/comments/${commentId}/reopen`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || "Failed to reopen comment");
+  }
+  return response.json();
+}
+
+export async function approveOrder(orderId: string) {
+  const response = await fetch(`${backendUrl}/api/orders/${orderId}/approve`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || "Failed to approve order");
   }
   return response.json();
 }
@@ -147,7 +257,7 @@ export async function getAdminOrderAudit(orderId: string) {
   return response.json();
 }
 
-export async function getAuthMe(): Promise<{ user: { id: string; email: string; name: string | null; role: string } | null }> {
+export async function getAuthMe(): Promise<{ user: AuthUser | null }> {
   const response = await fetch(`${backendUrl}/api/auth/me`, {
     credentials: "include",
   });
