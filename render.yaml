@@ -1,0 +1,62 @@
+databases:
+  - name: kahani-v2-postgres
+    databaseName: kahani_v2
+    user: kahani_v2_user
+    plan: starter
+
+services:
+  - type: web
+    name: kahani-v2-backend
+    runtime: node
+    rootDir: kahani-storybooks-v2/backend
+    plan: starter
+    buildCommand: npm install && npm run build
+    preDeployCommand: npm run prisma:deploy
+    startCommand: npm run start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8787
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kahani-v2-postgres
+          property: connectionString
+      - key: FRONTEND_URL
+        sync: false
+      - key: FRONTEND_URLS
+        sync: false
+      - key: BACKEND_PUBLIC_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: AUTH_SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_BOOTSTRAP_EMAILS
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+
+  - type: static
+    name: kahani-v2-frontend
+    rootDir: kahani-storybooks-v2
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: VITE_BACKEND_URL
+        sync: false
+      - key: BACKEND_URL
+        sync: false

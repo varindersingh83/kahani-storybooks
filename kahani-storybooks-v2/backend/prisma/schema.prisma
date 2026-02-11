@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  DESIGNER
+  ADMIN
+  FINANCE_ADMIN
+}
+
+enum OrderStatus {
+  DRAFT
+  PAYMENT_PENDING
+  PAID
+  PREVIEW_READY
+  IN_REVIEW
+  CHANGES_REQUESTED
+  CHANGES_APPLIED
+  APPROVED_BY_CUSTOMER
+  PRODUCTION_READY
+  IN_PRODUCTION
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED_PARTIAL
+  REFUNDED_FULL
+}
+
+enum ThreadStatus {
+  OPEN
+  DESIGNER_REPLIED
+  CUSTOMER_REPLIED
+  RESOLVED
+  REOPENED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  googleSub    String?       @unique
+  role         Role          @default(CUSTOMER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orders       Order[]       @relation("CustomerOrders")
+  comments     PageComment[]
+  replies      CommentReply[]
+  discounts    Discount[]    @relation("DiscountCreatedBy")
+  refunds      Refund[]      @relation("RefundCreatedBy")
+  statusEvents StatusHistory[] @relation("StatusChangedBy")
+}
+
+model Order {
+  id                       String          @id @default(cuid())
+  orderNumber              String          @unique
+  customerId               String
+  status                   OrderStatus     @default(DRAFT)
+  currency                 String          @default("USD")
+  subtotalAmountCents      Int             @default(0)
+  discountAmountCents      Int             @default(0)
+  shippingAmountCents      Int             @default(0)
+  totalAmountCents         Int             @default(0)
+  previewUnlockedAt        DateTime?
+  approvedAt               DateTime?
+  paymentMethodId          String?
+  stripeCustomerId         String?
+  stripeCheckoutSessionId  String?         @unique
+  customer                 User            @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Restrict)
+  items                    OrderItem[]
+  comments                 PageComment[]
+  payments                 Payment[]
+  discounts                Discount[]
+  refunds                  Refund[]
+  statusHistory            StatusHistory[]
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+}
+
+model OrderItem {
+  id                String   @id @default(cuid())
+  orderId           String
+  sku               String
+  title             String
+  quantity          Int      @default(1)
+  unitAmountCents   Int
+  lineAmountCents   Int
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model PageComment {
+  id               String       @id @default(cuid())
+  orderId          String
+  pageNumber       Int
+  userId           String
+  body             String
+  status           ThreadStatus @default(OPEN)
+  resolvedByUserId String?
+  resolvedAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  order            Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user             User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  replies          CommentReply[]
+}
+
+model CommentReply {
+  id         String   @id @default(cuid())
+  commentId  String
+  userId     String
+  body       String
+  createdAt  DateTime @default(now())
+  comment    PageComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model Payment {
+  id                     String   @id @default(cuid())
+  orderId                String
+  stripePaymentIntentId  String?  @unique
+  stripeChargeId         String?  @unique
+  amountCents            Int
+  currency               String   @default("USD")
+  status                 String
+  eventType              String?
+  metadata               Json?
+  createdAt              DateTime @default(now())
+  order                  Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Discount {
+  id                String   @id @default(cuid())
+  orderId           String
+  code              String?
+  reason            String?
+  amountCents       Int
+  createdByUserId   String
+  createdAt         DateTime @default(now())
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdBy         User     @relation("DiscountCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+}
+
+model Refund {
+  id                String   @id @default(cuid())
+  orderId           String
+  stripeRefundId    String?  @unique
+  amountCents       Int
+  reason            String?
+  createdByUserId   String
+  createdAt         DateTime @default(now())
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdBy         User     @relation("RefundCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+}
+
+model StatusHistory {
+  id           String      @id @default(cuid())
+  orderId      String
+  fromStatus   OrderStatus?
+  toStatus     OrderStatus
+  note         String?
+  changedById  String?
+  createdAt    DateTime    @default(now())
+  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  changedBy    User?       @relation("StatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+}

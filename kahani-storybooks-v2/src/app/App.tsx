@@ -2,7 +2,8 @@ import { motion, useScroll, useTransform, useMotionValue } from 'motion/react';
 import { Star, Shield, Heart, Truck, ShoppingBag, User, Sparkles, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Mail, Music, X, Upload, Info, Check } from 'lucide-react';
 import { Suspense, lazy, useRef, useState, useEffect, MouseEvent, ReactNode, createContext, useContext } from 'react';
 import ReactDOM from 'react-dom';
-import { createHashRouter, RouterProvider, Link, useNavigate } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Link, useNavigate, useLocation } from 'react-router-dom';
+import { applyOrderDiscount, createCheckoutSession, getAdminOrders, getAuthMe, getOrderStatus, issueOrderRefund, logout, startGoogleLogin } from './lib/api';
 
 
 // Hero carousel images (local assets)
@@ -152,11 +153,14 @@ export const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
   }, [isOpen]);
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    // In a real application, this would redirect to OAuth provider
-    console.log(`Logging in with ${provider}`);
-    // Simulate successful login
-    onLogin();
-    onClose();
+    if (provider === 'google') {
+      onLogin();
+      onClose();
+      const returnTo = window.location.hash ? `/${window.location.hash}` : '/#/';
+      startGoogleLogin(returnTo);
+      return;
+    }
+    alert('Facebook login is not configured yet.');
   };
 
   if (!isOpen) return null;
@@ -3245,10 +3249,31 @@ function CartPage() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [checkoutEmail, setCheckoutEmail] = useState('');
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+  const [checkoutNotice, setCheckoutNotice] = useState('');
+  const location = useLocation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const checkout = params.get('checkout');
+    if (checkout === 'success') {
+      const lastOrderId = localStorage.getItem('kahani_last_order_id');
+      if (lastOrderId) {
+        setCheckoutNotice(`Payment successful for order ${lastOrderId}.`);
+      } else {
+        setCheckoutNotice('Payment successful. Your preview status will sync shortly.');
+      }
+    }
+    if (checkout === 'cancelled') {
+      setCheckoutNotice('Checkout was cancelled.');
+    }
+  }, [location.search]);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -3272,6 +3297,45 @@ function CartPage() {
   const shipping = 5.00;
   const total = subtotal + shipping;
 
+  const handleCheckout = async () => {
+    try {
+      if (!checkoutEmail) {
+        setCheckoutError('Please enter your email to continue checkout.');
+        return;
+      }
+
+      setCheckoutError('');
+      setIsCheckingOut(true);
+
+      const items = cartItems.map((item) => ({
+        sku: `book-${item.id}`,
+        title: item.title,
+        quantity: item.quantity,
+        unitAmountCents: Math.round(item.price * 100),
+      }));
+
+      const session = await createCheckoutSession({
+        customerEmail: checkoutEmail,
+        currency: 'usd',
+        items,
+        successUrl: `${window.location.origin}/#/cart?checkout=success`,
+        cancelUrl: `${window.location.origin}/#/cart?checkout=cancelled`,
+      });
+
+      if (!session.url) {
+        throw new Error('Stripe session URL was not returned.');
+      }
+
+      localStorage.setItem('kahani_last_order_id', session.orderId);
+      window.location.assign(session.url);
+    } catch (error) {
+      console.error(error);
+      setCheckoutError('Checkout failed. Please try again.');
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50/30 to-white">
       {/* Header */}
@@ -3283,7 +3347,6 @@ function CartPage() {
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
           onLogin={handleLogin}
-          isSignUp={false}
         />
       )}
 
@@ -3304,6 +3367,7 @@ function CartPage() {
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-serif text-gray-900 mb-2">Shopping Cart</h1>
           <p className="text-gray-600">{cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart</p>
+          {checkoutNotice && <p className="text-green-600 mt-3">{checkoutNotice}</p>}
         </div>
 
         {cartItems.length === 0 ? (
@@ -3421,13 +3485,30 @@ function CartPage() {
                   </div>
                 </div>
 
+                <div className="mb-4">
+                  <label className="block text-sm text-gray-600 mb-2">Email for receipt</label>
+                  <input
+                    type="email"
+                    value={checkoutEmail}
+                    onChange={(e) => setCheckoutEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent"
+                  />
+                </div>
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut}
                   className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-rose-400 to-amber-400 text-white font-medium shadow-lg hover:shadow-xl transition-all mb-4"
                 >
-                  Proceed to Checkout
+                  {isCheckingOut ? 'Redirecting to Stripe...' : 'Proceed to Checkout'}
                 </motion.button>
+
+                {checkoutError && (
+                  <p className="text-sm text-red-500 mb-4">{checkoutError}</p>
+                )}
 
                 <button
                   onClick={() => navigate('/')}
@@ -3472,9 +3553,36 @@ function BookPreviewPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isPreviewUnlocked, setIsPreviewUnlocked] = useState(false);
+  const [previewMessage, setPreviewMessage] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const syncUnlock = async () => {
+      const lastOrderId = localStorage.getItem('kahani_last_order_id');
+      if (!lastOrderId) {
+        setIsPreviewUnlocked(false);
+        setPreviewMessage('Only the first 2 pages are visible until payment is confirmed.');
+        return;
+      }
+      try {
+        const order = await getOrderStatus(lastOrderId);
+        const unlocked = order.status === 'PAID' || order.status === 'PREVIEW_READY' || order.status === 'IN_REVIEW' || order.status === 'CHANGES_REQUESTED' || order.status === 'CHANGES_APPLIED' || order.status === 'APPROVED_BY_CUSTOMER' || order.status === 'PRODUCTION_READY' || order.status === 'IN_PRODUCTION' || order.status === 'SHIPPED' || order.status === 'DELIVERED' || order.status === 'COMPLETED';
+        setIsPreviewUnlocked(unlocked);
+        if (!unlocked) {
+          setPreviewMessage('Full preview unlocks after payment is confirmed.');
+        } else {
+          setPreviewMessage('');
+        }
+      } catch {
+        setIsPreviewUnlocked(false);
+        setPreviewMessage('Unable to verify payment. Showing 2-page preview.');
+      }
+    };
+    void syncUnlock();
   }, []);
 
   const handleLogin = () => {
@@ -3546,7 +3654,6 @@ function BookPreviewPage() {
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
           onLogin={handleLogin}
-          isSignUp={false}
         />
       )}
 
@@ -3574,13 +3681,15 @@ function BookPreviewPage() {
 
         {/* Book Pages */}
         <div className="space-y-8">
-          {bookPages.map((spread, index) => (
+          {bookPages.map((spread, index) => {
+            const locked = !isPreviewUnlocked && index >= 1;
+            return (
             <motion.div
               key={spread.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              className={`bg-white rounded-2xl shadow-xl overflow-hidden ${locked ? 'relative' : ''}`}
             >
               {/* Page Number */}
               <div className="bg-gradient-to-r from-rose-100 to-amber-100 px-6 py-3 border-b border-gray-200">
@@ -3619,9 +3728,18 @@ function BookPreviewPage() {
                   </p>
                 </div>
               </div>
+              {locked && (
+                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
+                  <p className="text-xl font-medium text-gray-900 mb-2">Locked Preview</p>
+                  <p className="text-sm text-gray-600 max-w-xs">
+                    Only first 2 pages are visible until payment is completed.
+                  </p>
+                </div>
+              )}
             </motion.div>
-          ))}
+          )})}
         </div>
+        {previewMessage && <p className="text-center text-amber-600 mt-4">{previewMessage}</p>}
 
         {/* Action Buttons */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -3680,6 +3798,191 @@ function BookPreviewPage() {
   );
 }
 
+function AdminPage() {
+  const [orderId, setOrderId] = useState('');
+  const [discountType, setDiscountType] = useState<'fixed' | 'percent'>('percent');
+  const [discountValue, setDiscountValue] = useState('10');
+  const [refundAmount, setRefundAmount] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [orders, setOrders] = useState<Array<{
+    id: string;
+    orderNumber: string;
+    status: string;
+    totalAmountCents: number;
+    createdAt: string;
+    customer: { email: string; name: string | null };
+  }>>([]);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const loadOrders = async (params?: { q?: string; status?: string }) => {
+    try {
+      const result = await getAdminOrders(params);
+      setOrders(result.orders);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load orders');
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const session = await getAuthMe();
+        if (!session.user || (session.user.role !== 'ADMIN' && session.user.role !== 'FINANCE_ADMIN')) {
+          setIsAdmin(false);
+          return;
+        }
+        setIsAdmin(true);
+        await loadOrders();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to check admin session');
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    void init();
+  }, []);
+
+  const handleApplyDiscount = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const result = await applyOrderDiscount({
+        orderId,
+        discountType,
+        value: Number(discountValue),
+      });
+      setMessage(`Discount applied. New total: $${(result.totalAmountCents / 100).toFixed(2)}`);
+      await loadOrders({ q: searchQuery || undefined, status: statusFilter || undefined });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to apply discount');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefund = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const result = await issueOrderRefund({
+        orderId,
+        amountCents: refundAmount ? Number(refundAmount) : undefined,
+      });
+      setMessage(`Refund issued (${result.status}): $${(result.amountCents / 100).toFixed(2)}`);
+      await loadOrders({ q: searchQuery || undefined, status: statusFilter || undefined });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to issue refund');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    await loadOrders({
+      q: searchQuery || undefined,
+      status: statusFilter || undefined,
+    });
+  };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-rose-50/30 to-white">
+        <div className="max-w-3xl mx-auto px-6 py-16">
+          <p className="text-gray-600">Checking admin session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-rose-50/30 to-white">
+        <div className="max-w-3xl mx-auto px-6 py-16 space-y-4">
+          <h1 className="text-4xl font-serif text-gray-900">Admin Finance</h1>
+          <p className="text-gray-600">You must sign in as an admin to access this page.</p>
+          <button
+            onClick={() => startGoogleLogin('/#/admin')}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-400 to-amber-400 text-white"
+          >
+            Sign in with Google
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-rose-50/30 to-white">
+      <div className="max-w-3xl mx-auto px-6 py-16 space-y-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-serif text-gray-900">Admin Finance</h1>
+          <button onClick={() => void logout()} className="px-4 py-2 rounded-xl border border-gray-300 text-gray-700">
+            Logout
+          </button>
+        </div>
+        <div className="bg-white rounded-2xl p-6 shadow-md space-y-4">
+          <h2 className="text-xl text-gray-900">Order Queue</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search order/email" className="w-full px-4 py-3 border border-gray-200 rounded-xl" />
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl">
+              <option value="">All statuses</option>
+              <option value="PAID">PAID</option>
+              <option value="PREVIEW_READY">PREVIEW_READY</option>
+              <option value="IN_REVIEW">IN_REVIEW</option>
+              <option value="CHANGES_REQUESTED">CHANGES_REQUESTED</option>
+              <option value="APPROVED_BY_CUSTOMER">APPROVED_BY_CUSTOMER</option>
+              <option value="IN_PRODUCTION">IN_PRODUCTION</option>
+              <option value="SHIPPED">SHIPPED</option>
+              <option value="REFUNDED_PARTIAL">REFUNDED_PARTIAL</option>
+              <option value="REFUNDED_FULL">REFUNDED_FULL</option>
+            </select>
+            <button onClick={() => void handleSearch()} className="px-6 py-3 rounded-xl bg-gray-900 text-white">Refresh</button>
+          </div>
+          <div className="space-y-2 max-h-64 overflow-auto">
+            {orders.length === 0 && <p className="text-sm text-gray-500">No orders found.</p>}
+            {orders.map((order) => (
+              <button
+                key={order.id}
+                onClick={() => setOrderId(order.id)}
+                className={`w-full text-left p-3 rounded-xl border ${orderId === order.id ? 'border-rose-300 bg-rose-50' : 'border-gray-200 bg-white'}`}
+              >
+                <p className="text-sm text-gray-900">{order.orderNumber} · {order.status}</p>
+                <p className="text-xs text-gray-500">{order.customer.email} · ${(order.totalAmountCents / 100).toFixed(2)}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl p-6 shadow-md space-y-4">
+          <input value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="Order ID" className="w-full px-4 py-3 border border-gray-200 rounded-xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <select value={discountType} onChange={(e) => setDiscountType(e.target.value as 'fixed' | 'percent')} className="w-full px-4 py-3 border border-gray-200 rounded-xl">
+              <option value="percent">Percent</option>
+              <option value="fixed">Fixed cents</option>
+            </select>
+            <input value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} placeholder="Discount value" className="w-full px-4 py-3 border border-gray-200 rounded-xl" />
+          </div>
+          <button disabled={loading} onClick={handleApplyDiscount} className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-400 to-amber-400 text-white">
+            Apply Discount
+          </button>
+          <div className="pt-4 border-t border-gray-200 space-y-3">
+            <input value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} placeholder="Refund amount in cents (optional)" className="w-full px-4 py-3 border border-gray-200 rounded-xl" />
+            <button disabled={loading} onClick={handleRefund} className="px-6 py-3 rounded-xl bg-gray-900 text-white">
+              Issue Refund
+            </button>
+          </div>
+          {message && <p className="text-sm text-green-600">{message}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Router Configuration
 const router = createHashRouter([
   {
@@ -3721,6 +4024,10 @@ const router = createHashRouter([
   {
     path: "/cart",
     element: <CartPage />,
+  },
+  {
+    path: "/admin",
+    element: <AdminPage />,
   },
 ]);
 
