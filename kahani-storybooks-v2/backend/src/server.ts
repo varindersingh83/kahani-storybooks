@@ -53,8 +53,8 @@ app.use("/health", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/orders", ordersRouter);
-app.use("/api", commentsRouter);
 app.use("/api/payments", paymentsRouter);
+app.use("/api", commentsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
